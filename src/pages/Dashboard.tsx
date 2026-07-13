@@ -79,6 +79,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [redemptionError, setRedemptionError] = useState('');
   const [lookupResult, setLookupResult] = useState<any | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
+  const [amountToRedeem, setAmountToRedeem] = useState('');
+  const [redeemLoading, setRedeemLoading] = useState(false);
 
   // Forms / Modals
   const [showPromoModal, setShowPromoModal] = useState(false);
@@ -1066,6 +1068,50 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     }
   };
 
+  const handleRedeemWallet = async () => {
+    if (!lookupResult?.customer || !activeLocation || !amountToRedeem) return;
+    const amount = parseFloat(amountToRedeem);
+    if (isNaN(amount) || amount <= 0) {
+      showToast('Please enter a valid amount to redeem.', 'error');
+      return;
+    }
+
+    setRedeemLoading(true);
+    try {
+      const res = await EasyRewardService.redeemWalletBalance(
+        lookupResult.customer.id,
+        activeLocation.id,
+        amount,
+        authUser.id
+      );
+
+      if (res.success) {
+        showToast(`Successfully redeemed R${amount.toFixed(2)} from customer wallet!`, 'success');
+        setAmountToRedeem('');
+        
+        // Refresh the search result data to show updated wallet balance
+        const updatedWallets = await EasyRewardService.getWallets(lookupResult.customer.id);
+        setLookupResult((prev: any) => prev ? { ...prev, wallets: updatedWallets } : null);
+        loadData();
+      } else {
+        showToast(res.error || 'Failed to redeem wallet balance.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('An error occurred during wallet redemption.', 'error');
+    } finally {
+      setRedeemLoading(false);
+    }
+  };
+
+  const getCalculatedEarnings = () => {
+    if (!validationSpend || !business?.referrerReward) return '0.00';
+    const spend = parseFloat(validationSpend);
+    if (isNaN(spend) || spend <= 0) return '0.00';
+    const earned = EasyRewardService.calculateReferralReward(business.referrerReward, spend);
+    return earned.toFixed(2);
+  };
+
   // Handle Referral Approvals Queue
   const handleApproveReferral = async (referralId: string) => {
     try {
@@ -1821,23 +1867,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                       </div>
                     </div>
 
-                    <form onSubmit={handleRedemptionLookup} className="space-y-4">
-                      {business.requirePurchase && (
-                        <div className="animate-fade-in">
-                          <label className="block text-xs text-txtsecondary mb-1.5 font-bold">Checkout Bill Spend (Rands) *</label>
-                          <div className="relative">
-                            <span className="absolute left-4 top-3 text-xs text-txtsecondary font-bold">R</span>
-                            <input 
-                              type="number" 
-                              value={validationSpend} 
-                              onChange={(e) => setValidationSpend(e.target.value)}
-                              placeholder="e.g. 250"
-                              className="w-full pl-8 pr-4 py-3 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
-                              required
-                            />
+                    {/* Wallet Balance Redemption Form */}
+                    {lookupResult.wallets && lookupResult.wallets.map((w: any) => {
+                      if (w.rewardType === 'cash' && w.balance > 0) {
+                        return (
+                          <div key={w.id} className="p-3.5 bg-hover rounded-xl border border-divider space-y-2.5 animate-fade-in">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] text-txtsecondary font-bold uppercase">Redeem Customer Wallet Balance</span>
+                              <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 rounded">
+                                Available: R{w.balance.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <span className="absolute left-3 top-2 text-xs text-txtsecondary font-bold">R</span>
+                                <input
+                                  type="number"
+                                  value={amountToRedeem}
+                                  onChange={(e) => setAmountToRedeem(e.target.value)}
+                                  max={w.balance}
+                                  placeholder="Amount to claim"
+                                  className="w-full pl-7 pr-3 py-2 rounded-lg border border-divider text-xs text-txtprimary bg-panel focus:border-[#10b981] outline-none font-semibold"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={handleRedeemWallet}
+                                disabled={redeemLoading || !amountToRedeem || parseFloat(amountToRedeem) <= 0 || parseFloat(amountToRedeem) > w.balance}
+                                className="px-3.5 py-2 rounded-lg font-bold bg-[#10b981] hover:bg-[#0e9f6e] text-white disabled:opacity-50 transition-all text-xs shrink-0 flex items-center gap-1"
+                              >
+                                {redeemLoading ? 'Claims...' : 'Confirm Claim'}
+                              </button>
+                            </div>
                           </div>
+                        );
+                      }
+                      return null;
+                    })}
+
+                    <form onSubmit={handleRedemptionLookup} className="space-y-4">
+                      <div className="animate-fade-in space-y-2">
+                        <label className="block text-xs text-txtsecondary font-bold">Checkout Bill Spend (Rands) *</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-3 text-xs text-txtsecondary font-bold">R</span>
+                          <input 
+                            type="number" 
+                            value={validationSpend} 
+                            onChange={(e) => setValidationSpend(e.target.value)}
+                            placeholder="e.g. 250"
+                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                            required
+                          />
                         </div>
-                      )}
+
+                        {validationSpend && parseFloat(validationSpend) > 0 && (
+                          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold flex items-center justify-between animate-fade-in">
+                            <span>Auto-Calculated Referrer Reward:</span>
+                            <span className="text-sm font-black">R{getCalculatedEarnings()}</span>
+                          </div>
+                        )}
+                      </div>
 
                       <div className="flex gap-2.5">
                         <button 
@@ -1845,6 +1934,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                           onClick={() => {
                             setLookupResult(null);
                             setRedeemCode('');
+                            setValidationSpend('');
                           }}
                           className="flex-1 py-3.5 rounded-xl font-bold bg-hover hover:bg-divider text-txtprimary border border-divider transition-all text-xs"
                         >

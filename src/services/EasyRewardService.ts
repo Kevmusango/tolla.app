@@ -622,6 +622,23 @@ export const EasyRewardService = {
     }));
   },
 
+  calculateReferralReward: (referrerRewardSetting: string, spendAmount: number): number => {
+    if (!referrerRewardSetting) return 0;
+    const cleanSetting = referrerRewardSetting.toLowerCase();
+    if (cleanSetting.includes('%')) {
+      const match = cleanSetting.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (match) {
+        const percentVal = parseFloat(match[1]);
+        return Math.round((spendAmount * (percentVal / 100)) * 100) / 100;
+      }
+    }
+    const matchCash = cleanSetting.match(/(?:r\s*|cash\s*)?(\d+(?:\.\d+)?)/);
+    if (matchCash) {
+      return parseFloat(matchCash[1]);
+    }
+    return 0;
+  },
+
   getWallets: async (customerBusinessId: string): Promise<Wallet[]> => {
     const { data: cb, error: cbError } = await supabase
       .from('customer_businesses')
@@ -631,23 +648,67 @@ export const EasyRewardService = {
 
     if (cbError || !cb) return [];
 
-    const { data: referrals, error: refError } = await supabase
-      .from('referrals')
-      .select('*')
-      .eq('customer_business_id', customerBusinessId)
-      .eq('status', 'redeemed');
+    const { data: txs, error: txError } = await supabase
+      .from('reward_transactions')
+      .select('cash_equivalent_value')
+      .eq('tolla_user_id', cb.tolla_user_id)
+      .eq('business_id', cb.business_id);
 
-    if (refError || !referrals) return [];
+    if (txError || !txs) return [];
 
-    const walletBalance = referrals.length * 50;
+    const balance = txs.reduce((sum, tx) => sum + (Number(tx.cash_equivalent_value) || 0), 0);
+
     return [{
       id: `w-${customerBusinessId}`,
       customerBusinessId,
       currency: 'ZAR',
-      balance: walletBalance,
+      balance: Math.max(0, Math.round(balance * 100) / 100),
       status: 'active',
       createdAt: cb.connected_at
     }];
+  },
+
+  redeemWalletBalance: async (customerBusinessId: string, locationId: string, amountToRedeem: number, managerId: string): Promise<{ success: boolean; error?: string }> => {
+    const { data: cb } = await supabase
+      .from('customer_businesses')
+      .select('*')
+      .eq('id', customerBusinessId)
+      .single();
+      
+    if (!cb) return { success: false, error: 'Customer profile not found' };
+    
+    const wallets = await EasyRewardService.getWallets(customerBusinessId);
+    const currentBalance = wallets[0]?.balance || 0;
+    
+    if (amountToRedeem > currentBalance) {
+      return { success: false, error: `Insufficient wallet balance. Available: R${currentBalance.toFixed(2)}` };
+    }
+    
+    const { error: txError } = await supabase
+      .from('reward_transactions')
+      .insert({
+        tolla_user_id: cb.tolla_user_id,
+        business_id: cb.business_id,
+        location_id: locationId,
+        source: 'manual_adjustment',
+        status: 'REDEEMED',
+        reward_type: 'cash',
+        reward_value: String(-amountToRedeem),
+        cash_equivalent_value: -amountToRedeem,
+        created_by: managerId
+      });
+      
+    if (txError) throw txError;
+    
+    await supabase.from('tolla_events').insert({
+      type: 'redeem_loyalty',
+      business_id: cb.business_id,
+      location_id: locationId,
+      user_id: cb.tolla_user_id,
+      metadata: { amount: amountToRedeem, notes: 'Wallet balance redemption' }
+    });
+    
+    return { success: true };
   },
 
   getTimelineEvents: async (customerBusinessId: string): Promise<TimelineEvent[]> => {
@@ -1057,7 +1118,7 @@ export const EasyRewardService = {
       if (nextStatus === 'redeemed') {
         const { data: cb } = await supabase
           .from('customer_businesses')
-          .select('referral_score')
+          .select('referral_score, tolla_user_id')
           .eq('id', r.customer_business_id)
           .single();
         const currentScore = cb?.referral_score || 0;
@@ -1066,6 +1127,21 @@ export const EasyRewardService = {
           .from('customer_businesses')
           .update({ referral_score: currentScore + 1 })
           .eq('id', r.customer_business_id);
+
+        const calculatedVal = EasyRewardService.calculateReferralReward(biz.referrer_reward, spendAmount || 0);
+
+        await supabase
+          .from('reward_transactions')
+          .insert({
+            tolla_user_id: cb?.tolla_user_id || r.customer_businesses.tolla_user_id,
+            business_id: bizId,
+            location_id: locationId,
+            source: 'referral',
+            status: 'ACTIVE',
+            reward_type: 'cash',
+            reward_value: String(calculatedVal),
+            cash_equivalent_value: calculatedVal
+          });
 
         await supabase.from('tolla_events').insert({
           type: 'redeem',
