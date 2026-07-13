@@ -104,31 +104,23 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     const loadDetails = async () => {
       setLoading(true);
       try {
-        const businesses = await EasyRewardService.getBusinesses();
+        const [businesses, initialCust] = await Promise.all([
+          EasyRewardService.getBusinesses(),
+          EasyRewardService.getCustomerByReferralCode(referralCode)
+        ]);
+
+        let cust = initialCust;
         let biz = null;
         if (businessSlug) {
           biz = businesses.find(b => b.slug.toLowerCase() === businessSlug.toLowerCase());
-        }
-
-        let cust = null;
-        if (biz) {
-          cust = await EasyRewardService.getCustomerByReferralCodeAndBusiness(referralCode, biz.id);
-        }
-        
-        if (!cust) {
-          cust = await EasyRewardService.getCustomerByReferralCode(referralCode);
+          if (biz) {
+            const matchedCust = await EasyRewardService.getCustomerByReferralCodeAndBusiness(referralCode, biz.id);
+            if (matchedCust) cust = matchedCust;
+          }
         }
 
         if (!cust) return;
         setCustomer(cust);
-
-        // Fetch universal user profile
-        const uProfile = await EasyRewardService.getTollaUser(cust.tollaUserId);
-        if (uProfile) setTollaUser(uProfile);
-
-        // Fetch wallets for this customer business relationship
-        const userWallets = await EasyRewardService.getWallets(cust.id);
-        setWallets(userWallets);
 
         if (!biz) {
           biz = businesses.find(b => b.id === cust.businessId);
@@ -136,52 +128,63 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
         if (!biz) return;
         setBusiness(biz);
 
-        const locations = await EasyRewardService.getLocations(biz.id);
+        // Fetch user profile, wallets, locations, promotions, referrals, customer relationships, and all locations in parallel
+        const [uProfile, userWallets, locations, promos, allRefs, allCusts, allLocs] = await Promise.all([
+          EasyRewardService.getTollaUser(cust.tollaUserId),
+          EasyRewardService.getWallets(cust.id),
+          EasyRewardService.getLocations(biz.id),
+          EasyRewardService.getPromotions(biz.id),
+          EasyRewardService.getReferrals(cust.businessId),
+          EasyRewardService.getAllCustomerBusinesses(),
+          EasyRewardService.getLocations()
+        ]);
+
+        if (uProfile) setTollaUser(uProfile);
+        setWallets(userWallets);
+        setAllLocations(locations);
+
         const urlParams = new URLSearchParams(window.location.search);
         const locParam = urlParams.get('loc');
         const loc = locations.find(l => l.id === locParam) || locations.find(l => l.id === cust.locationId) || locations[0];
         setLocation(loc);
-        setAllLocations(locations);
 
-        const promos = await EasyRewardService.getPromotions(biz.id);
         const locPromo = promos.find(p => p.locationIds?.includes(loc.id)) || promos[0] || null;
         setPromotion(locPromo);
 
-        const revs = await EasyRewardService.getReviews(loc.id);
+        // Fetch reviews and map referrals
+        const [revs] = await Promise.all([
+          EasyRewardService.getReviews(loc.id)
+        ]);
         setApprovedReviews(revs.filter(r => r.isApproved));
 
-        // Fetch referrals to compile stats
-        const allRefs = await EasyRewardService.getReferrals(cust.businessId);
         const custRefs = allRefs.filter(r => r.customerBusinessId === cust.id);
         setCustomerReferrals(custRefs);
 
-        // Fetch all customer relationships across all businesses
-        const allCusts = await EasyRewardService.getAllCustomerBusinesses();
         const userRelationships = allCusts.filter(c => c.tollaUserId === cust.tollaUserId);
-        
-        const allBizs = await EasyRewardService.getBusinesses();
-        const allLocs = await EasyRewardService.getLocations();
-        
-        const storesData = [];
-        for (const rel of userRelationships) {
-          const storeBiz = allBizs.find(b => b.id === rel.businessId);
-          if (!storeBiz) continue;
-          
+
+        // Map visited stores in parallel
+        const storesData = await Promise.all(userRelationships.map(async (rel) => {
+          const storeBiz = businesses.find(b => b.id === rel.businessId);
+          if (!storeBiz) return null;
+
           const storeLoc = allLocs.find(l => l.id === rel.locationId) || allLocs.find(l => l.businessId === storeBiz.id);
-          if (!storeLoc) continue;
-          
-          const storeWallets = await EasyRewardService.getWallets(rel.id);
-          const storePromotions = await EasyRewardService.getPromotions(storeBiz.id);
-          
-          storesData.push({
+          if (!storeLoc) return null;
+
+          const [storeWallets, storePromotions] = await Promise.all([
+            EasyRewardService.getWallets(rel.id),
+            EasyRewardService.getPromotions(storeBiz.id)
+          ]);
+
+          return {
             relationship: rel,
             business: storeBiz,
             location: storeLoc,
             wallets: storeWallets,
             promotions: storePromotions
-          });
-        }
-        setVisitedStores(storesData);
+          };
+        }));
+
+        setVisitedStores(storesData.filter(Boolean) as any[]);
 
         // Determine view mode dynamically
         const savedUserId = localStorage.getItem('easyreward_tolla_user_id');
@@ -191,8 +194,8 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
           setView('friend');
         }
 
-        // Track page view event
-        await EasyRewardService.trackEvent(loc.id, 'page_view', cust.id);
+        // Track page view event in background
+        EasyRewardService.trackEvent(loc.id, 'page_view', cust.id).catch(console.error);
       } catch (err) {
         console.error("Error loading referral page details", err);
       } finally {
