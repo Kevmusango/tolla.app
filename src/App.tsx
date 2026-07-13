@@ -138,6 +138,11 @@ export default function App() {
         slug = hostParts[0];
       }
 
+      // Ignore "www" as a business slug
+      if (slug === 'www') {
+        slug = '';
+      }
+
       // If accessing via the admin subdomain
       if (slug === 'admin') {
         if (pathname === '/login') {
