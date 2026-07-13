@@ -150,7 +150,6 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
   const handleShare = async () => {
     if (!business || !location) return;
     
-    // Track share click
     if (location) {
       await EasyRewardService.trackEvent(location.id, 'share_click', customer?.id);
     }
@@ -158,25 +157,22 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
     const shareUrl = `${window.location.origin}/r/${referralCode}`;
     const text = `Hey! Check out ${business.name} (${location.name}). Highly recommended! Here is a discount code for ${business.friendReward}: ${referralCode}. See details and directions here:`;
 
-    const shareData = {
-      title: `Referral Discount for ${business.name}`,
-      text: text,
-      url: shareUrl
-    };
-
     if (navigator.share) {
       try {
-        await navigator.share(shareData);
+        await navigator.share({
+          title: `Referral Discount for ${business.name}`,
+          text: text,
+          url: shareUrl
+        });
         return;
       } catch (err) {
         console.log("Web Share dismissed or blocked", err);
       }
     }
 
-    // Fallback: Copy link
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    // Direct WhatsApp fallback: opens WhatsApp directly rather than silently copying to clipboard
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleClaimReferral = async (e: React.FormEvent) => {
