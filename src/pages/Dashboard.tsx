@@ -3204,7 +3204,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                           </button>
                         ))}
                       </div>
-                    )}
+                    <div className="p-3.5 rounded-xl bg-hover border border-divider text-xs space-y-2 text-txtsecondary">
+                      {referrerRewardType === 'cash' ? (
+                        <>
+                          <p className="font-bold text-txtprimary flex items-center gap-1">💡 Cash Discount Mode (Flat Reward)</p>
+                          <p className="text-[11px] leading-relaxed">
+                            <strong>Example:</strong> If you set this to <strong>R5 discount on checkout</strong>, the ambassador who referred a friend gets a flat <strong>R5.00</strong> voucher added to their wallet every time their friend buys from your shop.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-bold text-txtprimary flex items-center gap-1">💡 Percentage % Mode (Share of Spend)</p>
+                          <p className="text-[11px] leading-relaxed">
+                            <strong>Example:</strong> If you set this to <strong>5% of every sale value</strong>, the ambassador gets <strong>5% of whatever their friend spends</strong> (e.g. if the friend spends R200, the ambassador earns R10.00).
+                          </p>
+                        </>
+                      )}
+                    </div>
 
                     <input 
                       type="text" 
@@ -3291,7 +3307,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                               </button>
                             ))}
                           </div>
-                        )}
+                        <div className="p-3.5 rounded-xl bg-hover border border-divider text-xs space-y-2 text-txtsecondary">
+                          {friendRewardType === 'cash' ? (
+                            <>
+                              <p className="font-bold text-txtprimary flex items-center gap-1">💡 Cash Off Mode (Flat Discount)</p>
+                              <p className="text-[11px] leading-relaxed">
+                                <strong>Example:</strong> If you set this to <strong>R50 off your first storefront visit</strong>, the referred friend receives a flat coupon for <strong>R50.00 off</strong> their bill when they checkout for the first time.
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-bold text-txtprimary flex items-center gap-1">💡 Percentage % Mode (Discount off bill)</p>
+                              <p className="text-[11px] leading-relaxed">
+                                <strong>Example:</strong> If you set this to <strong>15% discount on first visit</strong>, the referred friend gets a <strong>15% discount</strong> on their first check-out transaction.
+                              </p>
+                            </>
+                          )}
+                        </div>
 
                         <input 
                           type="text" 
