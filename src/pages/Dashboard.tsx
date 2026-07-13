@@ -1779,49 +1779,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
                 {lookupResult ? (
                   <div className="space-y-4 pt-2">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-gray-200 text-xs space-y-3">
-                      <div className="flex justify-between items-start border-b border-gray-150 pb-2">
+                    <div className="p-4 rounded-xl bg-hover border border-divider text-xs space-y-3">
+                      <div className="flex justify-between items-start border-b border-divider pb-2">
                         <div>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase">Customer Profile</p>
-                          <h4 className="text-sm font-extrabold text-gray-900">{lookupResult.user?.name || 'Anonymous Advocate'}</h4>
-                          <p className="text-[10px] text-gray-500 font-mono mt-0.5">{lookupResult.user?.phoneNumber || lookupResult.user?.emailAddress || 'No contact info'}</p>
+                          <p className="text-[10px] text-txtsecondary font-bold uppercase">Customer Profile</p>
+                          <h4 className="text-sm font-extrabold text-txtprimary">{lookupResult.user?.name || 'Anonymous Advocate'}</h4>
+                          <p className="text-[10px] text-txtsecondary font-mono mt-0.5">{lookupResult.user?.phoneNumber || lookupResult.user?.emailAddress || 'No contact info'}</p>
                         </div>
-                        <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 font-mono">
                           {lookupResult.customer?.tollaUserId}
                         </span>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Active Balances</p>
+                        <p className="text-[10px] text-txtsecondary font-bold uppercase">Active Balances</p>
                         {lookupResult.wallets && lookupResult.wallets.length > 0 ? (
                           <div className="space-y-1">
                             {lookupResult.wallets.map((w: any) => (
-                              <div key={w.id} className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-150 font-bold text-gray-805">
+                              <div key={w.id} className="flex justify-between items-center bg-panel p-2 rounded-lg border border-divider font-bold text-txtprimary">
                                 <span className="capitalize">{w.rewardType} Wallet</span>
-                                <span className="text-emerald-600 font-black">
+                                <span className="text-emerald-500 font-black">
                                   {w.rewardType === 'cash' ? `R${w.balance}` : w.description}
                                 </span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-gray-500 font-semibold italic">No active wallet balances for this business.</p>
+                          <p className="text-[11px] text-txtsecondary font-semibold italic">No active wallet balances for this business.</p>
                         )}
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Referrals &amp; Claim Status</p>
+                        <p className="text-[10px] text-txtsecondary font-bold uppercase">Referrals &amp; Claim Status</p>
                         {lookupResult.vouchers && lookupResult.vouchers.length > 0 ? (
                           <div className="space-y-1">
                             {lookupResult.vouchers.map((v: any) => (
-                              <div key={v.id} className="flex justify-between items-center bg-amber-50/50 p-2 rounded-lg border border-amber-100 font-bold text-gray-700">
+                              <div key={v.id} className="flex justify-between items-center bg-amber-500/10 p-2 rounded-lg border border-amber-500/20 font-bold text-txtprimary">
                                 <span>Friend Referral Claim</span>
-                                <span className="text-amber-600 font-extrabold text-[10px] uppercase">{v.status}</span>
+                                <span className="text-amber-500 font-extrabold text-[10px] uppercase">{v.status}</span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-gray-500 font-semibold italic">No pending referral claims to validate.</p>
+                          <p className="text-[11px] text-txtsecondary font-semibold italic">No pending referral claims to validate.</p>
                         )}
                       </div>
                     </div>
@@ -1851,7 +1851,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             setLookupResult(null);
                             setRedeemCode('');
                           }}
-                          className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 hover:bg-gray-200 text-gray-750 transition-all text-xs"
+                          className="flex-1 py-3.5 rounded-xl font-bold bg-hover hover:bg-divider text-txtprimary border border-divider transition-all text-xs"
                         >
                           Clear Search
                         </button>
@@ -1883,7 +1883,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                     <button 
                       type="submit" 
                       disabled={lookupLoading}
-                      className="w-full py-5 rounded-2xl font-extrabold bg-slate-900 hover:bg-slate-800 text-white shadow-xl transition-all text-sm flex items-center justify-center gap-2"
+                      className="w-full py-5 rounded-2xl font-extrabold bg-[#1e293b] hover:bg-[#0f172a] text-white shadow-xl transition-all text-sm flex items-center justify-center gap-2"
                     >
                       {lookupLoading ? (
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
