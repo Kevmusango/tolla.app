@@ -82,6 +82,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
   const [isUnwrapped, setIsUnwrapped] = useState(false);
   const [isUnwrapping, setIsUnwrapping] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // For referee visit pre-registration
   const [refereePhone, setRefereePhone] = useState('');
@@ -101,6 +102,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
   useEffect(() => {
     const loadDetails = async () => {
+      setLoading(true);
       try {
         const businesses = await EasyRewardService.getBusinesses();
         let biz = null;
@@ -193,6 +195,8 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
         await EasyRewardService.trackEvent(loc.id, 'page_view', cust.id);
       } catch (err) {
         console.error("Error loading referral page details", err);
+      } finally {
+        setLoading(false);
       }
     };
     loadDetails();
@@ -321,6 +325,17 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
       text: `${defaultPct}% Off`
     };
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-4 border-zinc-200 border-t-emerald-500 animate-spin" />
+          <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider animate-pulse">Loading secure discount link...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!business || !location || !customer) {
     return (
