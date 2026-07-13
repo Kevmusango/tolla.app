@@ -56,7 +56,57 @@ export const EasyRewardService = {
   },
   
   createBusiness: async (data: Omit<Business, 'id' | 'createdAt'>): Promise<Business> => {
-    return db.createBusiness(data);
+    const { data: created, error } = await supabase
+      .from('businesses')
+      .insert({
+        name: data.name,
+        slug: data.slug,
+        logo_url: data.logoUrl || null,
+        industry: data.industry,
+        custom_industry: data.customIndustry || null,
+        business_type: data.businessType || null,
+        referrer_reward: data.referrerReward,
+        friend_reward: data.friendReward,
+        verification_method: data.verificationMethod,
+        custom_identifier_label: data.customIdentifierLabel || null,
+        limit_one_per_friend: data.limitOnePerFriend,
+        require_purchase: data.requirePurchase,
+        minimum_spend: data.minimumSpend,
+        reward_expiry_days: data.rewardExpiryDays,
+        limit_one_per_day: data.limitOnePerDay,
+        first_time_only: data.firstTimeOnly,
+        block_self_referral: data.blockSelfReferral,
+        redeemable_location_ids: data.redeemableLocationIds,
+        eligible_service_ids: data.eligibleServiceIds
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: created.id,
+      name: created.name,
+      slug: created.slug,
+      logoUrl: created.logo_url || undefined,
+      industry: created.industry || 'Other',
+      customIndustry: created.custom_industry || undefined,
+      businessType: created.business_type || undefined,
+      referrerReward: created.referrer_reward,
+      friendReward: created.friend_reward,
+      subscriptionPlan: 'free',
+      createdAt: created.created_at,
+      verificationMethod: created.verification_method as any,
+      customIdentifierLabel: created.custom_identifier_label || undefined,
+      limitOnePerFriend: created.limit_one_per_friend,
+      requirePurchase: created.require_purchase,
+      minimumSpend: created.minimum_spend ? Number(created.minimum_spend) : null,
+      rewardExpiryDays: created.reward_expiry_days,
+      limitOnePerDay: created.limit_one_per_day,
+      firstTimeOnly: created.first_time_only,
+      blockSelfReferral: created.block_self_referral,
+      redeemableLocationIds: created.redeemable_location_ids || [],
+      eligibleServiceIds: created.eligible_service_ids || []
+    };
   },
   
   updateBusiness: async (id: string, data: Partial<Business>): Promise<Business> => {
