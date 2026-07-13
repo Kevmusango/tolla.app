@@ -623,7 +623,8 @@ export const EasyRewardService = {
         },
         location: primaryLoc,
         wallets,
-        referralScore: cb.referral_score
+        referralScore: cb.referral_score,
+        connectedAt: cb.connected_at
       };
     }));
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { EasyRewardService } from '../services/EasyRewardService';
 import { 
   Sparkles, Award, MapPin, Phone, MessageCircle, Copy, Share2, 
-  Clock, Coins, CheckCircle2 
+  Clock, Coins, CheckCircle2, Search, SlidersHorizontal 
 } from 'lucide-react';
 
 interface CustomerHubProps {
@@ -10,11 +10,17 @@ interface CustomerHubProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
 }
 
+type SortOption = 'all' | 'highest-balance' | 'latest-joined';
+
 export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNavigate }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copiedBizId, setCopiedBizId] = useState<string | null>(null);
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('all');
 
   useEffect(() => {
     const fetchHubData = async () => {
@@ -36,8 +42,10 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
     fetchHubData();
   }, [referralCode]);
 
-  const handleShare = async (biz: any) => {
-    const shareUrl = `${window.location.origin}/b/${biz.slug}/r/${referralCode}`;
+  const handleShare = async (rel: any) => {
+    const biz = rel.business;
+    const locId = rel.location?.id || '';
+    const shareUrl = `${window.location.origin}/b/${biz.slug}/r/${referralCode}${locId ? `?loc=${locId}` : ''}`;
     const hasFriendDisc = biz.friendReward && biz.friendReward !== 'none' && biz.friendReward !== 'No special reward';
     const text = hasFriendDisc
       ? `Hey! Check out ${biz.name}. Highly recommended! Use this link to get ${biz.friendReward}:`
@@ -104,6 +112,32 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
 
   const { user, relationships } = data;
 
+  // 1. Filter by Search Query
+  const filteredRelationships = relationships.filter((rel: any) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      rel.business.name.toLowerCase().includes(query) ||
+      rel.business.industry.toLowerCase().includes(query) ||
+      (rel.location?.name && rel.location.name.toLowerCase().includes(query))
+    );
+  });
+
+  // 2. Sort by Filter Selection
+  const sortedRelationships = [...filteredRelationships].sort((a: any, b: any) => {
+    if (sortBy === 'highest-balance') {
+      const aBal = a.wallets.find((w: any) => w.rewardType === 'cash' || w.currency === 'ZAR')?.balance || 0;
+      const bBal = b.wallets.find((w: any) => w.rewardType === 'cash' || w.currency === 'ZAR')?.balance || 0;
+      return bBal - aBal;
+    }
+    if (sortBy === 'latest-joined') {
+      const aDate = a.connectedAt ? new Date(a.connectedAt).getTime() : 0;
+      const bDate = b.connectedAt ? new Date(b.connectedAt).getTime() : 0;
+      return bDate - aDate;
+    }
+    return 0; // Default: Database load order
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12">
       {/* Top Banner Navigation */}
@@ -121,12 +155,60 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
 
       <main className="max-w-md mx-auto px-4 pt-6 space-y-6">
         {/* User Card Profile Header */}
-        <section className="bg-gradient-to-br from-[#10b981] to-[#059669] text-white p-6 rounded-3xl shadow-lg relative overflow-hidden">
+        <section className="bg-gradient-to-br from-[#10b981] to-[#059669] text-white p-6 rounded-3xl shadow-lg relative overflow-hidden animate-fade-in">
           <div className="absolute -right-10 -bottom-10 opacity-10 text-[180px] font-black pointer-events-none select-none">T</div>
           <div className="space-y-1 relative z-10">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-100">Universal Rewards Card</span>
             <h2 className="text-2xl font-black">{user.name || 'Valued Advocate'}</h2>
             <p className="text-xs text-emerald-50 mt-1">{user.phoneNumber || user.emailAddress}</p>
+          </div>
+        </section>
+
+        {/* Search & Sort Panel */}
+        <section className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3.5">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <input 
+              type="text" 
+              placeholder="Search store name or industry..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all bg-slate-50/50"
+            />
+          </div>
+
+          {/* Sort Filter Tabs */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <SlidersHorizontal className="w-3 h-3 text-slate-400" /> Sort Wallet Grid:
+            </span>
+            <div className="grid grid-cols-3 gap-1.5 bg-slate-100/85 p-1 rounded-xl">
+              <button 
+                onClick={() => setSortBy('all')}
+                className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
+                  sortBy === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                }`}
+              >
+                All Deals
+              </button>
+              <button 
+                onClick={() => setSortBy('highest-balance')}
+                className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
+                  sortBy === 'highest-balance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                }`}
+              >
+                Highest Bal
+              </button>
+              <button 
+                onClick={() => setSortBy('latest-joined')}
+                className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
+                  sortBy === 'latest-joined' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                }`}
+              >
+                Latest Joined
+              </button>
+            </div>
           </div>
         </section>
 
@@ -137,7 +219,7 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
           </h3>
           
           <div className="space-y-3">
-            {relationships.map((rel: any) => {
+            {sortedRelationships.map((rel: any) => {
               const cashWallet = rel.wallets.find((w: any) => w.rewardType === 'cash' || w.currency === 'ZAR');
               const balance = cashWallet ? cashWallet.balance : 0;
               return (
@@ -164,10 +246,10 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
               );
             })}
 
-            {relationships.length === 0 && (
+            {sortedRelationships.length === 0 && (
               <div className="bg-white border border-dashed border-slate-200 rounded-2xl p-8 text-center text-slate-400 space-y-2">
                 <span className="text-3xl block">🏷️</span>
-                <p className="text-xs font-semibold">No connected business reward balances yet.</p>
+                <p className="text-xs font-semibold">No rewards matching your search criteria.</p>
                 <p className="text-[10px] text-slate-400">Scan a QR code at one of our partner storefronts to join their program.</p>
               </div>
             )}
@@ -181,7 +263,7 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
           </h3>
 
           <div className="space-y-4">
-            {relationships.map((rel: any) => {
+            {sortedRelationships.map((rel: any) => {
               const hasFriendDisc = rel.business.friendReward && rel.business.friendReward !== 'none' && rel.business.friendReward !== 'No special reward';
               return (
                 <div key={rel.relationshipId} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -243,7 +325,7 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
                   {/* Share Action Button */}
                   <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex gap-2">
                     <button 
-                      onClick={() => handleShare(rel.business)}
+                      onClick={() => handleShare(rel)}
                       className="w-full py-3.5 rounded-xl font-extrabold bg-[#10b981] hover:bg-[#0e9f6e] text-white shadow-md shadow-emerald-500/10 transition-all text-xs flex items-center justify-center gap-1.5 transform active:scale-98 cursor-pointer select-none border-none outline-none"
                     >
                       {copiedBizId === rel.business.id ? (

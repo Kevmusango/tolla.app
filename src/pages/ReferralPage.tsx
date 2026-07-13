@@ -103,7 +103,9 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
         setBusiness(biz);
 
         const locations = await EasyRewardService.getLocations(biz.id);
-        const loc = locations.find(l => l.id === cust.locationId) || locations[0];
+        const urlParams = new URLSearchParams(window.location.search);
+        const locParam = urlParams.get('loc');
+        const loc = locations.find(l => l.id === locParam) || locations.find(l => l.id === cust.locationId) || locations[0];
         setLocation(loc);
         setAllLocations(locations);
 
@@ -1031,7 +1033,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
           
           {/* Redeemable Locations */}
           <div className="space-y-4">
-            <h3 className="text-sm font-black font-sans text-slate-200 uppercase tracking-wider">Redeemable Locations</h3>
+            <h3 className="text-sm font-black font-sans text-txtsecondary uppercase tracking-wider">Redeemable Locations</h3>
             
             <div className="space-y-4">
               {allLocations.filter(loc => {
@@ -1040,10 +1042,10 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
               }).map(loc => {
                 const isSpecialActive = promotion && promotion.locationIds?.includes(loc.id);
                 return (
-                  <div key={loc.id} className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4 hover:border-brand-500/30 transition-all">
+                  <div key={loc.id} className="glass-panel p-5 rounded-2xl border border-divider space-y-4 hover:border-brand-500/30 transition-all">
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="font-extrabold text-slate-200 text-sm">{loc.name}</h4>
+                        <h4 className="font-extrabold text-txtprimary text-sm">{loc.name}</h4>
                         {isSpecialActive && (
                           <span className="px-2 py-0.5 rounded bg-brand-500/10 border border-brand-500/30 text-brand-400 text-[9px] font-black uppercase tracking-wider">
                             🏷️ Special Active
@@ -1051,14 +1053,14 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                         )}
                       </div>
                       
-                      <div className="space-y-2.5 text-xs text-slate-400 pt-1">
+                      <div className="space-y-2.5 text-xs text-txtsecondary pt-1">
                         <div className="flex gap-2">
-                          <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                          <p className="text-slate-300 leading-relaxed">{loc.address}</p>
+                          <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                          <p className="text-txtsecondary leading-relaxed">{loc.address}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1 font-semibold"><Phone className="w-3.5 h-3.5 text-slate-500" /> {loc.phoneNumber}</span>
-                          <span className="flex items-center gap-1 font-semibold"><MessageCircle className="w-3.5 h-3.5 text-slate-500" /> {loc.whatsappNumber}</span>
+                          <span className="flex items-center gap-1 font-semibold"><Phone className="w-3.5 h-3.5 text-slate-400" /> {loc.phoneNumber}</span>
+                          <span className="flex items-center gap-1 font-semibold"><MessageCircle className="w-3.5 h-3.5 text-[#00a884]" /> {loc.whatsappNumber}</span>
                         </div>
                       </div>
                     </div>
@@ -1068,7 +1070,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                         href={`https://maps.google.com/?q=${encodeURIComponent(loc.address)}`}
                         target="_blank" 
                         rel="noreferrer"
-                        className="flex-1 py-2.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700/50"
+                        className="flex-1 py-2.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-divider"
                       >
                         <MapPin className="w-3.5 h-3.5 text-slate-400" /> Google Map Directions
                       </a>
@@ -1076,15 +1078,15 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
                     {/* Collapsible Opening Hours */}
                     <details className="group pt-1">
-                      <summary className="text-[10px] text-slate-500 group-hover:text-slate-400 font-bold uppercase tracking-wider cursor-pointer list-none flex items-center justify-between hover:text-slate-300 transition-colors">
+                      <summary className="text-[10px] text-txtsecondary group-hover:text-txtprimary font-bold uppercase tracking-wider cursor-pointer list-none flex items-center justify-between transition-colors">
                         <span>Show Opening Hours</span>
                         <span className="transition-transform group-open:rotate-180 text-[8px]">▼</span>
                       </summary>
-                      <div className="mt-2 space-y-1.5 pt-2 border-t border-slate-800/45 text-[11px] animate-fade-in">
+                      <div className="mt-2 space-y-1.5 pt-2 border-t border-divider text-[11px] animate-fade-in">
                         {Object.entries(loc.openingHours || {}).map(([day, hrs]) => (
-                          <div key={day} className="flex justify-between text-slate-400">
+                          <div key={day} className="flex justify-between text-txtsecondary">
                             <span>{day}</span>
-                            <span className={hrs.closed ? 'text-red-400 font-medium' : 'text-slate-300'}>
+                            <span className={hrs.closed ? 'text-red-500 font-medium' : 'text-txtprimary'}>
                               {hrs.closed ? 'Closed' : `${hrs.open} - ${hrs.close}`}
                             </span>
                           </div>
@@ -1098,12 +1100,12 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
           </div>
 
           {/* Approved Reviews List */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div className="glass-panel p-6 rounded-2xl border border-divider space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-bold font-sans text-slate-200">Customer Reviews</h3>
+              <h3 className="text-sm font-bold font-sans text-txtprimary">Customer Reviews</h3>
               <button 
                 onClick={() => setShowReviewModal(true)}
-                className="text-[10px] text-brand-400 hover:text-brand-300 font-semibold"
+                className="text-[10px] text-[#10b981] hover:text-[#0e9f6e] font-semibold bg-transparent border-none cursor-pointer"
               >
                 + Write Review
               </button>
@@ -1111,15 +1113,15 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
             <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
               {approvedReviews.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-4 italic">No approved reviews yet.</p>
+                <p className="text-xs text-txtsecondary text-center py-4 italic">No approved reviews yet.</p>
               ) : (
                 approvedReviews.map((rev) => (
-                  <div key={rev.id} className="p-3 rounded-xl bg-slate-950/40 border border-slate-850/50 space-y-1.5">
+                  <div key={rev.id} className="p-3 rounded-xl bg-hover border border-divider space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-200">{rev.customerName}</span>
+                      <span className="text-xs font-bold text-txtprimary">{rev.customerName}</span>
                       {renderStars(rev.rating)}
                     </div>
-                    {rev.comment && <p className="text-[11px] text-slate-400 leading-relaxed italic">"{rev.comment}"</p>}
+                    {rev.comment && <p className="text-[11px] text-txtsecondary leading-relaxed italic">"{rev.comment}"</p>}
                   </div>
                 ))
               )}
@@ -1130,17 +1132,17 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
       {/* Review Submission Modal */}
       {showReviewModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-slate-800 relative">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
+          <div className="w-full max-w-md bg-white p-6 rounded-2xl border border-divider relative shadow-2xl text-slate-800">
             <button 
               onClick={() => setShowReviewModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors border-none bg-transparent cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
             
-            <h3 className="text-lg font-bold font-sans mb-1 text-slate-100">Write a Review</h3>
-            <p className="text-xs text-slate-400 mb-6">Share your feedback with us! All reviews are reviewed by the business owner.</p>
+            <h3 className="text-lg font-bold font-sans mb-1 text-slate-900">Write a Review</h3>
+            <p className="text-xs text-slate-500 mb-6">Share your feedback with us! All reviews are reviewed by the business owner.</p>
 
             {reviewSubmitted ? (
               <div className="py-6 text-center text-brand-400 font-medium space-y-2">
