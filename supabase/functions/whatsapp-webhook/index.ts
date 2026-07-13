@@ -173,10 +173,10 @@ serve(async (req: Request) => {
           }
         }
 
-        // 5. Dispatch WhatsApp advocate invite template back to user
+        // 5. Dispatch WhatsApp advocate welcome text link back to user
         if (WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_ACCESS_TOKEN) {
           const referralLink = `${APP_URL}/me/${tollaUser.referral_code || tollaUser.id}`
-          console.log(`[WhatsApp Webhook] Dispatching welcome template to +${senderPhone}...`)
+          console.log(`[WhatsApp Webhook] Dispatching welcome text link to +${senderPhone}...`)
 
           const metaRes = await fetch(
             `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
@@ -190,19 +190,9 @@ serve(async (req: Request) => {
                 messaging_product: "whatsapp",
                 recipient_type: "individual",
                 to: senderPhone,
-                type: "template",
-                template: {
-                  name: "customer_hub_access",
-                  language: { code: "en_US" },
-                  components: [
-                    {
-                      type: "body",
-                      parameters: [
-                        { type: "text", text: targetLocation.name },
-                        { type: "text", text: referralLink }
-                      ]
-                    }
-                  ]
+                type: "text",
+                text: {
+                  body: `Your digital member card for ${targetLocation.name} is active! 🎉\n\nAccess your secure Tolla Hub to check your account dashboard, monitor wallet transactions, and manage your linked store profiles here:\n${referralLink}\n\nThank you!\nPowered by Tolla.app`
                 }
               })
             }
@@ -210,9 +200,9 @@ serve(async (req: Request) => {
           
           if (!metaRes.ok) {
             const metaError = await metaRes.text()
-            console.error("[WhatsApp Webhook] Meta API template dispatch failed:", metaError)
+            console.error("[WhatsApp Webhook] Meta API text link dispatch failed:", metaError)
           } else {
-            console.log(`[WhatsApp Webhook] Template invite successfully dispatched!`)
+            console.log(`[WhatsApp Webhook] Welcome text link successfully dispatched!`)
           }
         } else {
           console.error("[WhatsApp Webhook] Meta credentials (ID/Token) are not set inside Edge Function variables.")
