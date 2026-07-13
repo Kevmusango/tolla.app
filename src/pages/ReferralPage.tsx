@@ -919,20 +919,15 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                     )}
                   </div>
 
-                  {/* Discount Code */}
-                  <div className="bg-hover/80 border border-divider rounded-2xl p-6 flex flex-col items-center justify-center border-dashed relative">
-                    <div className="absolute top-2 right-2">
-                      <button 
-                        onClick={handleCopyLink}
-                        className="p-2 text-xs text-slate-500 hover:text-slate-800 bg-slate-200 hover:bg-slate-300 rounded-lg transition-all"
-                      >
-                        {copied ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-2">Discount Code</p>
-                    <span className="text-4xl font-black tracking-widest text-brand-400 font-mono select-all">{referralCode}</span>
-                    <span className="text-[9px] text-slate-500 mt-3 text-center">
-                      Show this code to the cashier when you visit.
+                  {/* Discount Code Activation Panel */}
+                  <div className="bg-[#10b981]/5 border border-emerald-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative">
+                    <CheckCircle2 className="w-10 h-10 text-[#10b981] mb-2" />
+                    <p className="text-[10px] text-[#10b981] uppercase tracking-widest font-bold mb-1">Discount Activated!</p>
+                    <span className="text-sm font-black text-txtprimary leading-normal">
+                      {refereePhone ? `Mobile Number Registered: ${refereePhone}` : (refereeEmail ? `Email Registered: ${refereeEmail}` : 'Your contact has been registered!')}
+                    </span>
+                    <span className="text-[10px] text-txtsecondary mt-3 leading-relaxed max-w-sm">
+                      Simply mention your registered phone/email to the cashier when checking out at the storefront to claim your discount.
                     </span>
                   </div>
 

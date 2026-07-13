@@ -192,7 +192,7 @@ serve(async (req: Request) => {
                 to: senderPhone,
                 type: "template",
                 template: {
-                  name: "advocate_invite",
+                  name: "customer_hub_access",
                   language: { code: "en_US" },
                   components: [
                     {

@@ -94,6 +94,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
   // Settings
   const [bizName, setBizName] = useState('');
+  const [bizLogoUrl, setBizLogoUrl] = useState('');
   const [referrerReward, setReferrerReward] = useState('');
   const [friendReward, setFriendReward] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
@@ -239,6 +240,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [configLocWhatsapp, setConfigLocWhatsapp] = useState('');
   const [configLocIdentifier, setConfigLocIdentifier] = useState('');
   const [configLocVerificationMethod, setConfigLocVerificationMethod] = useState<'code' | 'code_phone' | 'code_identifier' | 'manager_approval'>('code');
+  const [configLocBannerUrl, setConfigLocBannerUrl] = useState('');
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
   const [configLocCategory, setConfigLocCategory] = useState('beauty');
@@ -544,6 +546,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     setConfigLocPhone(loc.phoneNumber);
     setConfigLocWhatsapp(loc.whatsappNumber);
     setConfigLocIdentifier(loc.customIdentifierName ?? '');
+    setConfigLocBannerUrl(loc.bannerUrl || '');
     setConfigLocVerificationMethod(loc.verificationMethod ?? 'code');
     
     // Attempt to reverse match industry category, otherwise default to other
@@ -644,7 +647,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
           industry: finalIndustry,
           customIndustry: finalCustomIndustry,
           businessType: finalType,
-          bannerUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&h=400&fit=crop&q=80"
+          bannerUrl: configLocBannerUrl || "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&h=400&fit=crop&q=80"
         });
 
         // Auto enable for redemptions
@@ -670,6 +673,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
           industry: finalIndustry,
           customIndustry: finalCustomIndustry,
           businessType: finalType,
+          bannerUrl: configLocBannerUrl || "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&h=400&fit=crop&q=80"
         });
         showToast('Location updated successfully!', 'success');
         setConfigureLocId(null);
@@ -799,9 +803,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     try {
       const businesses = await EasyRewardService.getBusinesses();
       const biz = businesses.find(b => b.id === authUser.businessId);
-      if (!biz) return;
       setBusiness(biz);
       setBizName(biz.name);
+      setBizLogoUrl(biz.logoUrl || '');
       setQrPosterText(prev => prev || `Scan to get ${biz.friendReward || 'rewards'}! 🎁`);
       setReferrerReward(biz.referrerReward);
       if (biz.referrerReward.includes('%')) {
@@ -1438,6 +1442,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
       await EasyRewardService.updateBusiness(business.id, {
         name: bizName,
+        logoUrl: bizLogoUrl || '',
         referrerReward: referrerRewardValue,
         friendReward: friendRewardValue,
         redeemableLocationIds: selectedRedeemableLocationIds,
@@ -3147,6 +3152,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm text-txtprimary font-bold mb-1.5 font-sans">Business Logo Image URL</label>
+                    <input 
+                      type="text" 
+                      value={bizLogoUrl} 
+                      onChange={(e) => setBizLogoUrl(e.target.value)}
+                      placeholder="e.g. https://mywebsite.com/logo.png"
+                      className="w-full px-4 py-3 rounded-xl border border-divider text-sm text-txtprimary focus:border-[#10b981] outline-none bg-hover font-semibold"
+                    />
+                    <p className="text-[10px] text-txtsecondary mt-1">Provide a link to your business logo image. If you don't have a logo, you can link any storefront image.</p>
+                  </div>
+
                   {/* Referrer Reward Selection */}
                   <div className="space-y-3">
                     <label className="block text-sm text-txtprimary font-bold">Referrer Customer Reward Payout</label>
@@ -3643,6 +3660,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                         setConfigLocCustomVal('');
                         setConfigLocCustomType('Service');
                         setConfigGallery([]);
+                        setConfigLocBannerUrl('');
                         
                         // Default hours
                         const defaultHours: Record<string, { open: string; close: string; closed: boolean }> = {};
@@ -4448,6 +4466,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                       className="w-full px-3 py-2 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none"
                       required
                     />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-txtsecondary font-semibold uppercase mb-1">Background Banner Image URL</label>
+                    <input 
+                      type="text" 
+                      value={configLocBannerUrl} 
+                      onChange={(e) => setConfigLocBannerUrl(e.target.value)}
+                      placeholder="e.g. https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f"
+                      className="w-full px-3 py-2 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                    />
+                    <p className="text-[9px] text-txtsecondary mt-1">This image will show up as the top background image on the referral landing pages.</p>
                   </div>
                 </div>
               </div>
