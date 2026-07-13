@@ -193,7 +193,7 @@ serve(async (req: Request) => {
                 type: "template",
                 template: {
                   name: "customer_hub_access",
-                  language: { code: "en" },
+                  language: { code: "en_US" },
                   components: [
                     {
                       type: "body",
