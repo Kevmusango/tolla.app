@@ -27,6 +27,37 @@ interface ReferralPageProps {
   onNavigate: (route: string) => void;
 }
 
+const formatPhoneDisplay = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('27') && clean.length === 11) {
+    return `+27 ${clean.slice(2, 4)} ${clean.slice(4, 7)} ${clean.slice(7)}`;
+  }
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `+27 ${clean.slice(1, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  }
+  if (numStr.startsWith('+')) return numStr;
+  return `+${numStr}`;
+};
+
+const formatTelUrl = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `+27${clean.slice(1)}`;
+  }
+  return clean.startsWith('27') ? `+${clean}` : `+27${clean}`;
+};
+
+const formatWaUrl = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `27${clean.slice(1)}`;
+  }
+  return clean.startsWith('27') ? clean : `27${clean}`;
+};
+
 export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, businessSlug, initialView = 'referrer', onNavigate }) => {
   const [view, setView] = useState<'referrer' | 'friend'>(initialView);
   const [visitedStores, setVisitedStores] = useState<Array<{
@@ -1054,8 +1085,22 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                           <p className="text-txtsecondary leading-relaxed">{loc.address}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1 font-semibold"><Phone className="w-3.5 h-3.5 text-slate-400" /> {loc.phoneNumber}</span>
-                          <span className="flex items-center gap-1 font-semibold"><MessageCircle className="w-3.5 h-3.5 text-[#00a884]" /> {loc.whatsappNumber}</span>
+                          <a 
+                            href={`tel:${formatTelUrl(loc.phoneNumber)}`}
+                            className="flex items-center gap-1 font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-slate-400" /> 
+                            {formatPhoneDisplay(loc.phoneNumber)}
+                          </a>
+                          <a 
+                            href={`https://wa.me/${formatWaUrl(loc.whatsappNumber)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 text-[#00a884]" /> 
+                            {formatPhoneDisplay(loc.whatsappNumber)}
+                          </a>
                         </div>
                       </div>
                     </div>

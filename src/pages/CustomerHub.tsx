@@ -12,6 +12,37 @@ interface CustomerHubProps {
 
 type SortOption = 'all' | 'highest-balance' | 'latest-joined';
 
+const formatPhoneDisplay = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('27') && clean.length === 11) {
+    return `+27 ${clean.slice(2, 4)} ${clean.slice(4, 7)} ${clean.slice(7)}`;
+  }
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `+27 ${clean.slice(1, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  }
+  if (numStr.startsWith('+')) return numStr;
+  return `+${numStr}`;
+};
+
+const formatTelUrl = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `+27${clean.slice(1)}`;
+  }
+  return clean.startsWith('27') ? `+${clean}` : `+27${clean}`;
+};
+
+const formatWaUrl = (numStr: string) => {
+  if (!numStr) return '';
+  const clean = numStr.replace(/\D/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    return `27${clean.slice(1)}`;
+  }
+  return clean.startsWith('27') ? clean : `27${clean}`;
+};
+
 export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNavigate }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -301,13 +332,27 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
                       {rel.location?.phoneNumber && (
                         <div className="flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                          <span>Phone: {rel.location.phoneNumber}</span>
+                          <span className="text-zinc-500">Phone: </span>
+                          <a 
+                            href={`tel:${formatTelUrl(rel.location.phoneNumber)}`}
+                            className="text-emerald-600 hover:text-emerald-700 hover:underline font-bold transition-colors"
+                          >
+                            {formatPhoneDisplay(rel.location.phoneNumber)}
+                          </a>
                         </div>
                       )}
                       {rel.location?.whatsappNumber && (
                         <div className="flex items-center gap-2">
                           <MessageCircle className="w-3.5 h-3.5 text-[#00a884] shrink-0" />
-                          <span>WhatsApp: {rel.location.whatsappNumber}</span>
+                          <span className="text-zinc-500">WhatsApp: </span>
+                          <a 
+                            href={`https://wa.me/${formatWaUrl(rel.location.whatsappNumber)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-600 hover:text-emerald-700 hover:underline font-bold transition-colors"
+                          >
+                            {formatPhoneDisplay(rel.location.whatsappNumber)}
+                          </a>
                         </div>
                       )}
                       {rel.location?.openingHours && (
