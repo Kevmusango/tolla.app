@@ -889,7 +889,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       if (biz.friendReward === 'none' || biz.friendReward === 'No special reward' || !biz.friendReward) {
         setHasFriendReward(false);
         setFriendRewardType('percent');
-        setFriendReward('15% discount on first visit');
+        setFriendReward('15% discount on checkout');
       } else {
         setHasFriendReward(true);
         setFriendReward(biz.friendReward);
