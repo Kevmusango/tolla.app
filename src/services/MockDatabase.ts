@@ -478,10 +478,52 @@ class MockDatabase {
   }
 
   // Referrals (Redemptions)
-  public createReferral(data: Omit<Referral, 'id' | 'createdAt' | 'status'>): Referral {
+  public createReferral(data: Omit<Referral, 'id' | 'createdAt' | 'status'> & { marketingConsent?: boolean }): Referral {
+    const cleanPhone = data.refereePhone ? data.refereePhone.trim().replace(/\D/g, '') : null;
+    const cleanEmail = data.refereeEmail ? data.refereeEmail.trim().toLowerCase() : null;
+    const users = this.getTollaUsers();
+    let existingUser = null;
+
+    if (cleanPhone) {
+      existingUser = users.find(u => u.phoneNumber === data.refereePhone);
+    }
+    if (!existingUser && cleanEmail) {
+      existingUser = users.find(u => u.emailAddress === data.refereeEmail);
+    }
+
+    if (existingUser) {
+      existingUser.marketingConsent = data.marketingConsent ?? false;
+      this.setTollaUsers(users);
+    } else if (cleanPhone || cleanEmail) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let randomCode = '';
+      for (let i = 0; i < 6; i++) {
+        randomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const newUserId = `TR-${randomCode}`;
+      const newUser: TollaUser = {
+        id: newUserId,
+        phoneNumber: data.refereePhone || undefined,
+        emailAddress: data.refereeEmail || undefined,
+        name: 'Anonymous Friend',
+        marketingConsent: data.marketingConsent ?? false,
+        referralCode: newUserId,
+        walletCurrency: 'ZAR',
+        walletStatus: 'active',
+        createdAt: new Date().toISOString()
+      };
+      users.push(newUser);
+      this.setTollaUsers(users);
+    }
+
     const referrals = this.getReferrals();
     const newRef: Referral = {
-      ...data,
+      customerBusinessId: data.customerBusinessId,
+      refereePhone: data.refereePhone,
+      refereeEmail: data.refereeEmail,
+      refereeIdentifier: data.refereeIdentifier,
+      discountCode: data.discountCode,
+      locationId: data.locationId,
       id: `ref-${Date.now()}`,
       status: 'pending',
       createdAt: new Date().toISOString()

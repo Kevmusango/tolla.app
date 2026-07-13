@@ -88,6 +88,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
   const [refereeEmail, setRefereeEmail] = useState('');
   const [refereeMode, setRefereeMode] = useState<'whatsapp' | 'email'>('whatsapp');
   const [refereeIdValue, setRefereeIdValue] = useState('');
+  const [marketingConsent, setMarketingConsent] = useState(true);
   const [claimSubmitted, setClaimSubmitted] = useState(false);
   const [claimError, setClaimError] = useState('');
   const [customerReferrals, setCustomerReferrals] = useState<Referral[]>([]);
@@ -245,15 +246,9 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     const activeMethod = location.verificationMethod || business.verificationMethod || 'code';
     const activeLabel = location.customIdentifierName || business.customIdentifierLabel || 'Identifier';
 
-    if (activeMethod === 'code_phone' || activeMethod === 'code_identifier') {
-      if (refereeMode === 'whatsapp' && !refereePhone.trim()) {
-        setClaimError("WhatsApp number is required to claim the discount.");
-        return;
-      }
-      if (refereeMode === 'email' && !refereeEmail.trim()) {
-        setClaimError("Email address is required to claim the discount.");
-        return;
-      }
+    if (!refereePhone.trim()) {
+      setClaimError("WhatsApp/Mobile number is required to claim the discount.");
+      return;
     }
     if (activeMethod === 'code_identifier' && !refereeIdValue.trim()) {
       setClaimError(`${activeLabel} is required to claim the discount.`);
@@ -263,11 +258,12 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     try {
       await EasyRewardService.createReferral({
         customerBusinessId: customer.id,
-        refereePhone: refereeMode === 'whatsapp' ? refereePhone.trim() : undefined,
-        refereeEmail: refereeMode === 'email' ? refereeEmail.trim() : undefined,
+        refereePhone: refereePhone.trim(),
+        refereeEmail: undefined,
         refereeIdentifier: refereeIdValue.trim() || undefined,
         discountCode: referralCode,
-        locationId: location.id
+        locationId: location.id,
+        marketingConsent: marketingConsent
       });
       setClaimSubmitted(true);
     } catch (err) {
@@ -742,69 +738,18 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
           ) : (
             
             <div className="glass-panel p-6 rounded-2xl shadow-xl border border-divider space-y-6">
-              {refereeMode !== 'code' ? (
-                <div className="space-y-5 text-center">
-                  <Award className="w-8 h-8 text-brand-400 mx-auto mb-2" />
-                  <h2 className="text-xl font-bold font-sans text-zinc-900">
-                    {business.friendReward === 'none' || business.friendReward === 'No special reward' ? 'Join Rewards Program' : 'Claim Your Reward'}
-                  </h2>
-                  <p className="text-xs text-zinc-600 mt-1">
-                    {business.friendReward === 'none' || business.friendReward === 'No special reward'
-                      ? `Join **${business.name}** Rewards program on WhatsApp and start earning rewards for referring friends!`
-                      : `Join **${business.name}** Rewards program on WhatsApp to claim your discount.`}
-                  </p>
-
-                  {/* Reward Info */}
-                  <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-xl text-center space-y-1">
-                    {business.friendReward === 'none' || business.friendReward === 'No special reward' ? (
-                      <>
-                        <p className="text-xs font-semibold uppercase text-emerald-600 tracking-wider">Advocate Reward</p>
-                        <p className="text-sm font-bold text-zinc-900">Earn {business.referrerReward} for every friend checkout!</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-xs font-semibold uppercase text-emerald-600 tracking-wider">Your Discount Choice</p>
-                        {business.friendReward.includes(' | ') ? (
-                          <div className="flex flex-col gap-1.5 pt-1.5 items-center">
-                            {business.friendReward.split(' | ').map((gift, idx) => (
-                              <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-sans">
-                                🎁 Option #{idx + 1}: {gift}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xl font-black text-zinc-900">{business.friendReward}</p>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  <a 
-                    href={`https://wa.me/27829990000?text=Start%20${encodeURIComponent(business.name)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-4 rounded-xl font-bold bg-[#00a884] hover:bg-[#008f72] text-white shadow-xl transition-all text-xs flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer decoration-transparent select-none"
-                  >
-                    <MessageCircle className="w-4 h-4 fill-white stroke-none" />
-                    Claim Reward on WhatsApp
-                  </a>
-
-                  <button 
-                    type="button"
-                    onClick={() => setRefereeMode('code')}
-                    className="w-full text-center text-[10px] text-slate-500 hover:text-slate-300 transition-all cursor-pointer font-bold bg-transparent border-none outline-none mt-2"
-                  >
-                    Or generate local web redemption code
-                  </button>
-                </div>
-              ) : !claimSubmitted ? (
+              {!claimSubmitted ? (
                 // Claim Form Mode
                 <form onSubmit={handleClaimReferral} className="space-y-5">
                   <div className="text-center">
                     <Award className="w-8 h-8 text-brand-400 mx-auto mb-2" />
-                    <h2 className="text-xl font-bold font-sans text-zinc-900">Get Your Discount Code</h2>
+                    <h2 className="text-xl font-bold font-sans text-zinc-900">
+                      {business.friendReward === 'none' || business.friendReward === 'No special reward' ? 'Join Rewards Program' : 'Claim Your Reward'}
+                    </h2>
                     <p className="text-xs text-zinc-600 mt-1">
-                      Enter your details to get your discount code for **{business.name}**.
+                      {business.friendReward === 'none' || business.friendReward === 'No special reward'
+                        ? `Join **${business.name}** Rewards program to start earning rewards for referring friends!`
+                        : `Activate your discount code for **${business.name}** by entering your WhatsApp number below.`}
                     </p>
                   </div>
 
@@ -815,67 +760,42 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                   )}
 
                   <div className="space-y-4">
-                    {/* Mode selection tabs */}
-                    {(((location && location.verificationMethod) || business.verificationMethod) !== 'code') && (
-                      <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                        <button
-                          type="button"
-                          onClick={() => setRefereeMode('whatsapp')}
-                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                            refereeMode === 'whatsapp' ? 'bg-brand-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          WhatsApp
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRefereeMode('email')}
-                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                            refereeMode === 'email' ? 'bg-brand-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          Email
-                        </button>
-                      </div>
-                    )}
-
                     {/* WhatsApp Input */}
-                    {refereeMode === 'whatsapp' ? (
-                      <div className="space-y-1">
-                        <label className="block text-xs text-slate-400 font-semibold text-left">Your WhatsApp Number *</label>
-                        <input 
-                          type="tel" 
-                          value={refereePhone}
-                          onChange={(e) => setRefereePhone(e.target.value)}
-                          placeholder="e.g. +27821234567"
-                          className="w-full px-4 py-3 rounded-xl glass-input text-xs text-center"
-                          required
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <label className="block text-xs text-slate-400 font-semibold text-left">Your Email Address *</label>
-                        <input 
-                          type="email" 
-                          value={refereeEmail}
-                          onChange={(e) => setRefereeEmail(e.target.value)}
-                          placeholder="e.g. friend@domain.com"
-                          className="w-full px-4 py-3 rounded-xl glass-input text-xs text-center"
-                          required
-                        />
-                      </div>
-                    )}
+                    <div className="space-y-1">
+                      <label className="block text-xs text-zinc-700 font-semibold text-left">Your WhatsApp Number *</label>
+                      <input 
+                        type="tel" 
+                        value={refereePhone}
+                        onChange={(e) => setRefereePhone(e.target.value)}
+                        placeholder="e.g. +27821234567"
+                        className="w-full px-4 py-3 rounded-xl glass-input text-xs text-center text-zinc-900 border border-zinc-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white"
+                        required
+                      />
+                    </div>
+
+                    {/* Specials Consent Checkbox */}
+                    <label className="flex items-start gap-3 p-3.5 rounded-xl border border-zinc-150 bg-zinc-50/50 cursor-pointer select-none text-left hover:bg-zinc-50 transition-colors">
+                      <input 
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={(e) => setMarketingConsent(e.target.checked)}
+                        className="mt-0.5 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-zinc-600 leading-snug">
+                        I would like to receive exclusive specials, deals, and promotions from <strong>{business.name}</strong> via WhatsApp.
+                      </span>
+                    </label>
 
                     {/* Option 3 Custom Identifier input */}
                     {(((location && location.verificationMethod) || business.verificationMethod) === 'code_identifier') && (
                       <div className="space-y-1">
-                        <label className="block text-xs text-slate-400 font-semibold text-left">Your {(location && location.customIdentifierName) || business.customIdentifierLabel || 'Identifier'} *</label>
+                        <label className="block text-xs text-zinc-700 font-semibold text-left">Your {(location && location.customIdentifierName) || business.customIdentifierLabel || 'Identifier'} *</label>
                         <input 
                           type="text" 
                           value={refereeIdValue}
                           onChange={(e) => setRefereeIdValue(e.target.value)}
                           placeholder={`Enter your ${((location && location.customIdentifierName) || business.customIdentifierLabel || 'identifier').toLowerCase()}`}
-                          className="w-full px-4 py-3 rounded-xl glass-input text-xs text-center"
+                          className="w-full px-4 py-3 rounded-xl glass-input text-xs text-center text-zinc-900 border border-zinc-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white"
                           required
                         />
                       </div>
@@ -884,9 +804,9 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
                   <button 
                     type="submit"
-                    className="w-full py-4 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 text-slate-950 shadow-xl transition-all text-xs flex items-center justify-center gap-1.5"
+                    className="w-full py-4 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 text-slate-950 shadow-xl transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    Get Discount Code <Sparkles className="w-4 h-4" />
+                    Activate {business.friendReward !== 'none' && business.friendReward !== 'No special reward' ? business.friendReward : 'Discount'} <Sparkles className="w-4 h-4" />
                   </button>
                 </form>
               ) : (
@@ -900,9 +820,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                     <p className="text-xs text-zinc-600 mt-1">
                       {business.friendReward === 'none' || business.friendReward === 'No special reward'
                         ? 'Join the rewards program to start referring friends and earning rewards!'
-                        : claimSubmitted 
-                          ? 'Discount code ready! Show this code when you pay.' 
-                          : 'Your friend shared a discount code. Show this when you pay to get your discount.'}
+                        : 'Your friend shared a discount code. Show this when you pay to get your discount.'}
                     </p>
                   </div>
 
@@ -932,29 +850,39 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                   </div>
 
                   {/* Discount Code Activation Panel */}
-                  <div className="bg-[#10b981]/5 border border-emerald-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative">
-                    <CheckCircle2 className="w-10 h-10 text-[#10b981] mb-2" />
-                    <p className="text-[10px] text-[#10b981] uppercase tracking-widest font-bold mb-1">Discount Activated!</p>
-                    <span className="text-sm font-black text-txtprimary leading-normal">
-                      {refereePhone ? `Mobile Number Registered: ${refereePhone}` : (refereeEmail ? `Email Registered: ${refereeEmail}` : 'Your contact has been registered!')}
-                    </span>
-                    <span className="text-[10px] text-txtsecondary mt-3 leading-relaxed max-w-sm">
-                      Simply mention your registered phone/email to the cashier when checking out at the storefront to claim your discount.
-                    </span>
+                  <div className="bg-[#10b981]/5 border border-emerald-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative space-y-4">
+                    <div className="flex flex-col items-center">
+                      <CheckCircle2 className="w-10 h-10 text-[#10b981] mb-2" />
+                      <p className="text-[10px] text-[#10b981] uppercase tracking-widest font-bold mb-1">Discount Activated!</p>
+                      <span className="text-xs text-txtsecondary">
+                        Registered Mobile Number: <strong className="text-zinc-900">{refereePhone}</strong>
+                      </span>
+                    </div>
+
+                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl px-6 py-4 flex flex-col items-center gap-1.5 w-full">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Your Claim Code</span>
+                      <span className="text-2xl font-mono font-black text-emerald-600 tracking-widest bg-emerald-50 border border-emerald-200/50 px-4 py-1.5 rounded-lg select-all">
+                        {referralCode}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-zinc-700 leading-relaxed font-semibold">
+                      Show this code to the cashier when checking out to claim your discount.
+                    </p>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 w-full">
                     <a 
                       href={location.googleMapsLink || `https://maps.google.com/?q=${encodeURIComponent(location.address)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex-1 py-3.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700/50"
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700/50 decoration-transparent"
                     >
                       <MapPin className="w-4 h-4 text-slate-400" /> Get Directions
                     </a>
                     <a 
                       href={`tel:${location.phoneNumber}`}
-                      className="flex-1 py-3.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700/50"
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 text-center text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700/50 decoration-transparent"
                     >
                       <Phone className="w-4 h-4 text-slate-400" /> Call Business
                     </a>

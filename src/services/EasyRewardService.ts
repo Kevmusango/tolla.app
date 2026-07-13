@@ -1085,7 +1085,61 @@ export const EasyRewardService = {
     }));
   },
   
-  createReferral: async (data: Omit<Referral, 'id' | 'createdAt' | 'status'>): Promise<Referral> => {
+  createReferral: async (data: Omit<Referral, 'id' | 'createdAt' | 'status'> & { marketingConsent?: boolean }): Promise<Referral> => {
+    try {
+      const cleanPhone = data.refereePhone ? data.refereePhone.trim().replace(/\D/g, '') : null;
+      const cleanEmail = data.refereeEmail ? data.refereeEmail.trim().toLowerCase() : null;
+      let existingUser = null;
+
+      if (cleanPhone) {
+        const { data: matched } = await supabase
+          .from('tolla_users')
+          .select('*')
+          .eq('phone_number', data.refereePhone)
+          .maybeSingle();
+        existingUser = matched;
+      }
+      
+      if (!existingUser && cleanEmail) {
+        const { data: matched } = await supabase
+          .from('tolla_users')
+          .select('*')
+          .eq('email_address', data.refereeEmail)
+          .maybeSingle();
+        existingUser = matched;
+      }
+
+      if (existingUser) {
+        await supabase
+          .from('tolla_users')
+          .update({
+            marketing_consent: data.marketingConsent ?? false,
+            consent_timestamp: new Date().toISOString()
+          })
+          .eq('id', existingUser.id);
+      } else if (cleanPhone || cleanEmail) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomCode = '';
+        for (let i = 0; i < 6; i++) {
+          randomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const newUserId = `TR-${randomCode}`;
+        await supabase
+          .from('tolla_users')
+          .insert({
+            id: newUserId,
+            phone_number: data.refereePhone || null,
+            email_address: data.refereeEmail || null,
+            name: 'Anonymous Friend',
+            marketing_consent: data.marketingConsent ?? false,
+            consent_timestamp: new Date().toISOString(),
+            referral_code: newUserId
+          });
+      }
+    } catch (err) {
+      console.error("Error upserting referee user profile for marketing consent:", err);
+    }
+
     const { data: created, error } = await supabase
       .from('referrals')
       .insert({
