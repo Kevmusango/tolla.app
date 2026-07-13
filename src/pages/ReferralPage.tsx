@@ -902,8 +902,9 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
 
               <div className="grid sm:grid-cols-1 gap-3">
                 {location.services.map(svc => {
-                  const isLinkedToPromo = promotion && svc.applicablePromoIds.includes(promotion.id);
-                  const calc = promotion ? calculateDiscount(svc.price, promotion) : null;
+                  const isEligible = !business.eligibleServiceIds || business.eligibleServiceIds.length === 0 || business.eligibleServiceIds.includes(svc.id);
+                  const isLinkedToPromo = isEligible && promotion && svc.applicablePromoIds.includes(promotion.id);
+                  const calc = isEligible && promotion ? calculateDiscount(svc.price, promotion) : null;
 
                   return (
                     <div key={svc.id} className="p-4 rounded-xl bg-slate-950/40 border border-slate-850/50 flex items-center justify-between gap-4">
