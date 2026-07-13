@@ -145,9 +145,9 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
         <div className="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#10b981] flex items-center justify-center text-white font-black text-sm">T</div>
-            <span className="font-black text-lg text-slate-900 tracking-tight">Tolla Hub</span>
+            <span className="font-black text-lg text-zinc-900 tracking-tight">Tolla Hub</span>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-mono">
             ID: {user.referralCode}
           </span>
         </div>
@@ -165,29 +165,29 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
         </section>
 
         {/* Search & Sort Panel */}
-        <section className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3.5">
+        <section className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm space-y-3.5">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
             <input 
               type="text" 
               placeholder="Search store name or industry..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all bg-slate-50/50"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all bg-zinc-50"
             />
           </div>
 
           {/* Sort Filter Tabs */}
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <SlidersHorizontal className="w-3 h-3 text-slate-400" /> Sort Wallet Grid:
+            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider flex items-center gap-1">
+              <SlidersHorizontal className="w-3 h-3 text-zinc-400" /> Sort Wallet Grid:
             </span>
-            <div className="grid grid-cols-3 gap-1.5 bg-slate-100/85 p-1 rounded-xl">
+            <div className="grid grid-cols-3 gap-1.5 bg-zinc-100/85 p-1 rounded-xl">
               <button 
                 onClick={() => setSortBy('all')}
                 className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
-                  sortBy === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                  sortBy === 'all' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800 bg-transparent'
                 }`}
               >
                 All Deals
@@ -195,7 +195,7 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
               <button 
                 onClick={() => setSortBy('highest-balance')}
                 className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
-                  sortBy === 'highest-balance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                  sortBy === 'highest-balance' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800 bg-transparent'
                 }`}
               >
                 Highest Bal
@@ -203,7 +203,7 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
               <button 
                 onClick={() => setSortBy('latest-joined')}
                 className={`py-2 rounded-lg text-[10px] font-extrabold transition-all border-none outline-none cursor-pointer ${
-                  sortBy === 'latest-joined' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                  sortBy === 'latest-joined' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800 bg-transparent'
                 }`}
               >
                 Latest Joined
@@ -223,24 +223,24 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
               const cashWallet = rel.wallets.find((w: any) => w.rewardType === 'cash' || w.currency === 'ZAR');
               const balance = cashWallet ? cashWallet.balance : 0;
               return (
-                <div key={rel.relationshipId} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-4 hover:border-emerald-500/30 transition-all">
+                <div key={rel.relationshipId} className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex items-center justify-between gap-4 hover:border-emerald-500/30 transition-all">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       {rel.business.logoUrl ? (
                         <img src={rel.business.logoUrl} alt={rel.business.name} className="w-6 h-6 rounded-md object-cover" />
                       ) : (
-                        <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center uppercase">
+                        <div className="w-6 h-6 rounded-md bg-zinc-100 text-zinc-500 text-[10px] font-bold flex items-center justify-center uppercase">
                           {rel.business.name[0]}
                         </div>
                       )}
-                      <h4 className="font-extrabold text-sm text-slate-900">{rel.business.name}</h4>
+                      <h4 className="font-extrabold text-sm text-zinc-900">{rel.business.name}</h4>
                     </div>
-                    <span className="text-[10px] text-slate-400 capitalize">{rel.business.industry}</span>
+                    <span className="text-[10px] text-zinc-400 capitalize">{rel.business.industry}</span>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Balance Available</p>
-                    <span className="text-lg font-black text-slate-900">R{balance.toFixed(2)}</span>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Balance Available</p>
+                    <span className="text-lg font-black text-zinc-900">R{balance.toFixed(2)}</span>
                   </div>
                 </div>
               );
@@ -266,18 +266,18 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
             {sortedRelationships.map((rel: any) => {
               const hasFriendDisc = rel.business.friendReward && rel.business.friendReward !== 'none' && rel.business.friendReward !== 'No special reward';
               return (
-                <div key={rel.relationshipId} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                <div key={rel.relationshipId} className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col">
                   {/* Business Hero Banner info */}
-                  <div className="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
+                  <div className="p-5 border-b border-zinc-100 flex justify-between items-start gap-4">
                     <div className="space-y-1">
-                      <h4 className="font-black text-base text-slate-900">{rel.business.name}</h4>
-                      <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-                        <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" /> 
+                      <h4 className="font-black text-base text-zinc-900">{rel.business.name}</h4>
+                      <p className="text-xs text-zinc-500 flex items-center gap-1 font-medium">
+                        <MapPin className="w-3.5 h-3.5 shrink-0 text-zinc-400" /> 
                         {rel.location?.name || 'Main Branch'}
                       </p>
                     </div>
                     {rel.business.logoUrl && (
-                      <img src={rel.business.logoUrl} alt={rel.business.name} className="w-10 h-10 rounded-xl object-cover border border-slate-100 shadow-sm" />
+                      <img src={rel.business.logoUrl} alt={rel.business.name} className="w-10 h-10 rounded-xl object-cover border border-zinc-100 shadow-sm" />
                     )}
                   </div>
 
@@ -286,21 +286,21 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
                     <div className="grid grid-cols-2 gap-3.5">
                       <div className="bg-emerald-50/50 border border-emerald-100/50 p-3 rounded-xl">
                         <span className="text-[9px] uppercase tracking-wider font-extrabold text-emerald-600 block">Your Reward</span>
-                        <span className="text-xs font-bold text-slate-950 mt-0.5 block">{rel.business.referrerReward}</span>
+                        <span className="text-xs font-bold text-zinc-900 mt-0.5 block">{rel.business.referrerReward}</span>
                       </div>
                       <div className="bg-amber-50/50 border border-amber-100/50 p-3 rounded-xl">
                         <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-600 block">Friend's Reward</span>
-                        <span className="text-xs font-bold text-slate-950 mt-0.5 block">
+                        <span className="text-xs font-bold text-zinc-900 mt-0.5 block">
                           {hasFriendDisc ? rel.business.friendReward : 'Free entry/No coupon'}
                         </span>
                       </div>
                     </div>
 
                     {/* Extended business details */}
-                    <div className="space-y-2 text-[11px] text-slate-500 font-semibold border-t border-slate-100 pt-3">
+                    <div className="space-y-2 text-[11px] text-zinc-600 font-semibold border-t border-zinc-100 pt-3">
                       {rel.location?.phoneNumber && (
                         <div className="flex items-center gap-2">
-                          <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                           <span>Phone: {rel.location.phoneNumber}</span>
                         </div>
                       )}
@@ -312,10 +312,10 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
                       )}
                       {rel.location?.openingHours && (
                         <div className="flex items-start gap-2">
-                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                          <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                           <div className="space-y-0.5">
-                            <span className="block font-bold text-slate-700">Opening Hours:</span>
-                            <span className="text-[10px] text-slate-400 leading-normal whitespace-pre-line">
+                            <span className="block font-bold text-zinc-700">Opening Hours:</span>
+                            <span className="text-[10px] text-zinc-500 leading-normal whitespace-pre-line">
                               {typeof rel.location.openingHours === 'string'
                                 ? rel.location.openingHours
                                 : Object.entries(rel.location.openingHours || {})
