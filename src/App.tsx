@@ -159,7 +159,7 @@ export default function App() {
         slug = pathParts[2];
         
         // Adjust paths when using the fallback slug path
-        if (pathParts[3] === 'scan') {
+        if (!pathParts[3] || pathParts[3] === 'scan') {
           setBusinessSlug(slug);
           setRoute('scan');
           return;

@@ -77,6 +77,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [redeemCode, setRedeemCode] = useState('');
   const [redemptionResult, setRedemptionResult] = useState<any>(null);
   const [redemptionError, setRedemptionError] = useState('');
+  const [lookupResult, setLookupResult] = useState<any | null>(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
 
   // Forms / Modals
   const [showPromoModal, setShowPromoModal] = useState(false);
@@ -949,6 +951,81 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     }
   };
 
+  // Handle Preview Lookup
+  const handlePreviewLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!redeemCode || !activeLocation) return;
+    setRedemptionError('');
+    setLookupResult(null);
+    setLookupLoading(true);
+
+    try {
+      const codeClean = redeemCode.trim();
+      
+      // 1. Try by exact Referral Code / Tolla User ID first
+      let cust = await EasyRewardService.getCustomerByReferralCode(codeClean);
+      
+      // 2. If not found, try lookup by phone number
+      if (!cust) {
+        const cleanPhone = codeClean.replace(/\D/g, '');
+        const { data: matchedUser } = await supabase
+          .from('tolla_users')
+          .select('*')
+          .or(`phone_number.eq.${codeClean},phone_number.eq.${cleanPhone},phone_number.eq.+${cleanPhone}`);
+          
+        if (matchedUser && matchedUser.length > 0) {
+          // Find customer mapping for this business
+          const { data: cb } = await supabase
+            .from('customer_businesses')
+            .select('*')
+            .eq('tolla_user_id', matchedUser[0].id)
+            .eq('business_id', business.id)
+            .maybeSingle();
+          if (cb) {
+            cust = {
+              id: cb.id,
+              tollaUserId: cb.tolla_user_id,
+              businessId: cb.business_id,
+              locationId: cb.location_id,
+              customIdentifier: cb.custom_identifier,
+              referralScore: cb.referral_score,
+              createdAt: cb.created_at
+            };
+          }
+        }
+      }
+
+      if (!cust) {
+        setRedemptionError("No active customer profile or referral link found matching this code/number.");
+        setLookupLoading(false);
+        return;
+      }
+
+      // Fetch user profile info
+      const uProfile = await EasyRewardService.getTollaUser(cust.tollaUserId);
+      
+      // Fetch active wallet balances
+      const userWallets = await EasyRewardService.getWallets(cust.id);
+      
+      // Fetch successful referrals (unredeemed invites)
+      const allRefs = await EasyRewardService.getReferrals(business.id);
+      const custRefs = allRefs.filter(r => r.customerBusinessId === cust.id);
+      const availableVouchers = custRefs.filter(r => r.status === 'pending' || r.status === 'pending_approval');
+
+      setLookupResult({
+        customer: cust,
+        user: uProfile,
+        wallets: userWallets,
+        vouchers: availableVouchers
+      });
+    } catch (err) {
+      console.error(err);
+      setRedemptionError("An error occurred during lookup.");
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
   // Handle Redemption Lookups
   const handleRedemptionLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1700,46 +1777,122 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   </div>
                 )}
 
-                <form onSubmit={handleRedemptionLookup} className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs text-txtsecondary uppercase tracking-wider mb-2 font-bold">Discount / Reward Code</label>
-                      <input 
-                        type="text" 
-                        value={redeemCode} 
-                        onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                        placeholder="e.g. JD9821"
-                        className="w-full px-5 py-4 rounded-2xl border-2 border-divider focus:border-[#10b981] outline-none text-2xl font-mono text-center font-bold tracking-widest uppercase text-txtprimary bg-hover transition-all"
-                        required
-                      />
+                {lookupResult ? (
+                  <div className="space-y-4 pt-2">
+                    <div className="p-4 rounded-xl bg-slate-50 border border-gray-200 text-xs space-y-3">
+                      <div className="flex justify-between items-start border-b border-gray-150 pb-2">
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase">Customer Profile</p>
+                          <h4 className="text-sm font-extrabold text-gray-900">{lookupResult.user?.name || 'Anonymous Advocate'}</h4>
+                          <p className="text-[10px] text-gray-500 font-mono mt-0.5">{lookupResult.user?.phoneNumber || lookupResult.user?.emailAddress || 'No contact info'}</p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono">
+                          {lookupResult.customer?.tollaUserId}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase">Active Balances</p>
+                        {lookupResult.wallets && lookupResult.wallets.length > 0 ? (
+                          <div className="space-y-1">
+                            {lookupResult.wallets.map((w: any) => (
+                              <div key={w.id} className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-150 font-bold text-gray-805">
+                                <span className="capitalize">{w.rewardType} Wallet</span>
+                                <span className="text-emerald-600 font-black">
+                                  {w.rewardType === 'cash' ? `R${w.balance}` : w.description}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-gray-500 font-semibold italic">No active wallet balances for this business.</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase">Referrals &amp; Claim Status</p>
+                        {lookupResult.vouchers && lookupResult.vouchers.length > 0 ? (
+                          <div className="space-y-1">
+                            {lookupResult.vouchers.map((v: any) => (
+                              <div key={v.id} className="flex justify-between items-center bg-amber-50/50 p-2 rounded-lg border border-amber-100 font-bold text-gray-700">
+                                <span>Friend Referral Claim</span>
+                                <span className="text-amber-600 font-extrabold text-[10px] uppercase">{v.status}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-gray-500 font-semibold italic">No pending referral claims to validate.</p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Dynamic spend requirement check */}
-                    {business.requirePurchase && (
-                      <div className="animate-fade-in">
-                        <label className="block text-xs text-txtsecondary mb-1.5 font-bold">Checkout Bill Spend (Rands) *</label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-3 text-xs text-txtsecondary font-bold">R</span>
-                          <input 
-                            type="number" 
-                            value={validationSpend} 
-                            onChange={(e) => setValidationSpend(e.target.value)}
-                            placeholder="e.g. 250"
-                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
-                            required
-                          />
+                    <form onSubmit={handleRedemptionLookup} className="space-y-4">
+                      {business.requirePurchase && (
+                        <div className="animate-fade-in">
+                          <label className="block text-xs text-txtsecondary mb-1.5 font-bold">Checkout Bill Spend (Rands) *</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-3 text-xs text-txtsecondary font-bold">R</span>
+                            <input 
+                              type="number" 
+                              value={validationSpend} 
+                              onChange={(e) => setValidationSpend(e.target.value)}
+                              placeholder="e.g. 250"
+                              className="w-full pl-8 pr-4 py-3 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                              required
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
 
-                  <button 
-                    type="submit" 
-                    className="w-full py-5 rounded-2xl font-extrabold bg-[#10b981] hover:bg-[#0e9f6e] text-white shadow-xl shadow-emerald-500/10 transition-all text-sm flex items-center justify-center gap-2"
-                  >
-                    <Check className="w-5 h-5 stroke-[3px]" /> Validate Code
-                  </button>
-                </form>
+                      <div className="flex gap-2.5">
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setLookupResult(null);
+                            setRedeemCode('');
+                          }}
+                          className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 hover:bg-gray-200 text-gray-750 transition-all text-xs"
+                        >
+                          Clear Search
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="flex-1 py-3.5 rounded-xl font-extrabold bg-[#10b981] hover:bg-[#0e9f6e] text-white shadow-xl shadow-emerald-500/10 transition-all text-xs flex items-center justify-center gap-1.5"
+                        >
+                          <Check className="w-4 h-4 stroke-[3px]" /> Complete Checkout
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <form onSubmit={handlePreviewLookup} className="space-y-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs text-txtsecondary uppercase tracking-wider mb-2 font-bold">Customer Phone Number or Referral ID</label>
+                        <input 
+                          type="text" 
+                          value={redeemCode} 
+                          onChange={(e) => setRedeemCode(e.target.value)}
+                          placeholder="e.g. +27712345678 or TR-JD9821"
+                          className="w-full px-5 py-4 rounded-2xl border-2 border-divider focus:border-[#10b981] outline-none text-xl font-mono text-center font-bold text-txtprimary bg-hover transition-all"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={lookupLoading}
+                      className="w-full py-5 rounded-2xl font-extrabold bg-slate-900 hover:bg-slate-800 text-white shadow-xl transition-all text-sm flex items-center justify-center gap-2"
+                    >
+                      {lookupLoading ? (
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span>Lookup Customer &amp; Rewards</span>
+                      )}
+                    </button>
+                  </form>
+                )}
 
                 {redemptionResult && (
                   <div className="p-5 rounded-2xl bg-[#10b981]/10 border border-[#10b981]/20 text-sm space-y-3">
