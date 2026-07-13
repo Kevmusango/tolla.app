@@ -163,7 +163,10 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
     }
 
     const shareUrl = `${window.location.origin}/r/${referralCode}`;
-    const text = `Hey! Check out ${business.name} (${location.name}). Highly recommended! Here is a discount code for ${business.friendReward}: ${referralCode}. See details and directions here:`;
+    const hasFriendDisc = business.friendReward && business.friendReward !== 'none' && business.friendReward !== 'No special reward';
+    const text = hasFriendDisc
+      ? `Hey! Check out ${business.name} (${location.name}). Highly recommended! Here is a discount code for ${business.friendReward}: ${referralCode}. See details and directions here:`
+      : `Hey! Check out ${business.name} (${location.name}). Highly recommended! Join the rewards program to start earning. See details and directions here:`;
 
     if (navigator.share) {
       try {
@@ -712,24 +715,37 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
               {refereeMode !== 'code' ? (
                 <div className="space-y-5 text-center">
                   <Award className="w-8 h-8 text-brand-400 mx-auto mb-2" />
-                  <h2 className="text-xl font-bold font-sans text-white">Claim Your Reward</h2>
+                  <h2 className="text-xl font-bold font-sans text-white">
+                    {business.friendReward === 'none' || business.friendReward === 'No special reward' ? 'Join Rewards Program' : 'Claim Your Reward'}
+                  </h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Join **{business.name}** Rewards program on WhatsApp to claim your discount.
+                    {business.friendReward === 'none' || business.friendReward === 'No special reward'
+                      ? `Join **${business.name}** Rewards program on WhatsApp and start earning rewards for referring friends!`
+                      : `Join **${business.name}** Rewards program on WhatsApp to claim your discount.`}
                   </p>
 
                   {/* Reward Info */}
                   <div className="bg-brand-500/10 border border-brand-500/20 p-5 rounded-xl text-center space-y-1">
-                    <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Your Discount Choice</p>
-                    {business.friendReward.includes(' | ') ? (
-                      <div className="flex flex-col gap-1.5 pt-1.5 items-center">
-                        {business.friendReward.split(' | ').map((gift, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-400/10 border border-brand-400/25 text-brand-300 text-xs font-bold font-sans">
-                            🎁 Option #{idx + 1}: {gift}
-                          </span>
-                        ))}
-                      </div>
+                    {business.friendReward === 'none' || business.friendReward === 'No special reward' ? (
+                      <>
+                        <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Advocate Reward</p>
+                        <p className="text-sm font-bold text-white">Earn {business.referrerReward} for every friend checkout!</p>
+                      </>
                     ) : (
-                      <p className="text-xl font-black text-white">{business.friendReward}</p>
+                      <>
+                        <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Your Discount Choice</p>
+                        {business.friendReward.includes(' | ') ? (
+                          <div className="flex flex-col gap-1.5 pt-1.5 items-center">
+                            {business.friendReward.split(' | ').map((gift, idx) => (
+                              <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-400/10 border border-brand-400/25 text-brand-300 text-xs font-bold font-sans">
+                                🎁 Option #{idx + 1}: {gift}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xl font-black text-white">{business.friendReward}</p>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -848,27 +864,40 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
                 <>
                   <div className="text-center">
                     <Award className="w-8 h-8 text-brand-400 mx-auto mb-2" />
-                    <h2 className="text-xl font-bold font-sans text-white">You Got a Discount!</h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                      {claimSubmitted 
-                        ? "Discount code ready! Show this code when you pay." 
-                        : "Your friend shared a discount code. Show this when you pay to get your discount."}
+                    <h2 className="text-xl font-bold font-sans text-white">
+                      {business.friendReward === 'none' || business.friendReward === 'No special reward' ? 'Join Rewards Program' : 'You Got a Discount!'}
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {business.friendReward === 'none' || business.friendReward === 'No special reward'
+                        ? 'Join the rewards program to start referring friends and earning rewards!'
+                        : claimSubmitted 
+                          ? 'Discount code ready! Show this code when you pay.' 
+                          : 'Your friend shared a discount code. Show this when you pay to get your discount.'}
                     </p>
                   </div>
 
                   {/* Reward Info */}
                   <div className="bg-brand-500/10 border border-brand-500/20 p-5 rounded-xl text-center space-y-1">
-                    <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Your Discount Choice</p>
-                    {business.friendReward.includes(' | ') ? (
-                      <div className="flex flex-col gap-1.5 pt-1.5 items-center">
-                        {business.friendReward.split(' | ').map((gift, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-400/10 border border-brand-400/25 text-brand-300 text-xs font-bold font-sans">
-                            🎁 Option #{idx + 1}: {gift}
-                          </span>
-                        ))}
-                      </div>
+                    {business.friendReward === 'none' || business.friendReward === 'No special reward' ? (
+                      <>
+                        <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Advocate Reward</p>
+                        <p className="text-sm font-bold text-white">Earn {business.referrerReward} for every friend checkout!</p>
+                      </>
                     ) : (
-                      <p className="text-xl font-black text-white">{business.friendReward}</p>
+                      <>
+                        <p className="text-xs font-semibold uppercase text-brand-400 tracking-wider">Your Discount Choice</p>
+                        {business.friendReward.includes(' | ') ? (
+                          <div className="flex flex-col gap-1.5 pt-1.5 items-center">
+                            {business.friendReward.split(' | ').map((gift, idx) => (
+                              <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-400/10 border border-brand-400/25 text-brand-300 text-xs font-bold font-sans">
+                                🎁 Option #{idx + 1}: {gift}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xl font-black text-white">{business.friendReward}</p>
+                        )}
+                      </>
                     )}
                   </div>
 

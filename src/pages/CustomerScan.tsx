@@ -138,7 +138,7 @@ export const CustomerScan: React.FC<CustomerScanProps> = ({ businessSlug, onNavi
                     type: "template",
                     template: {
                       name: "advocate_invite",
-                      language: { code: "en" },
+                      language: { code: "en_US" },
                       components: [
                         {
                           type: "body",

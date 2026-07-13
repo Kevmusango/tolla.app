@@ -209,8 +209,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Reward Type Selector States
-  const [referrerRewardType, setReferrerRewardType] = useState<'cash' | 'percent' | 'custom'>('cash');
-  const [friendRewardType, setFriendRewardType] = useState<'cash' | 'percent' | 'custom'>('percent');
+  const [referrerRewardType, setReferrerRewardType] = useState<'cash' | 'percent'>('cash');
+  const [friendRewardType, setFriendRewardType] = useState<'cash' | 'percent'>('percent');
+  const [hasFriendReward, setHasFriendReward] = useState<boolean>(true);
   const [referrerGifts, setReferrerGifts] = useState<string[]>(['']);
   const [friendGifts, setFriendGifts] = useState<string[]>(['']);
 
@@ -803,10 +804,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       setReferrerReward(biz.referrerReward);
       if (biz.referrerReward.includes('%')) {
         setReferrerRewardType('percent');
-      } else if (biz.referrerReward.includes('R') || biz.referrerReward.includes('cash') || /^[0-9]+$/.test(biz.referrerReward)) {
-        setReferrerRewardType('cash');
       } else {
-        setReferrerRewardType('custom');
+        setReferrerRewardType('cash');
       }
       
       if (biz.referrerReward.includes(' | ')) {
@@ -815,18 +814,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
         setReferrerGifts([biz.referrerReward]);
       }
 
-      setFriendReward(biz.friendReward);
-      if (biz.friendReward.includes('%')) {
+      if (biz.friendReward === 'none' || biz.friendReward === 'No special reward' || !biz.friendReward) {
+        setHasFriendReward(false);
         setFriendRewardType('percent');
-      } else if (biz.friendReward.includes('R') && !biz.friendReward.includes('%')) {
-        setFriendRewardType('cash');
+        setFriendReward('15% discount on first visit');
       } else {
-        setFriendRewardType('custom');
+        setHasFriendReward(true);
+        setFriendReward(biz.friendReward);
+        if (biz.friendReward.includes('%')) {
+          setFriendRewardType('percent');
+        } else {
+          setFriendRewardType('cash');
+        }
       }
 
-      if (biz.friendReward.includes(' | ')) {
+      if (biz.friendReward && biz.friendReward.includes(' | ')) {
         setFriendGifts(biz.friendReward.split(' | '));
-      } else {
+      } else if (biz.friendReward) {
         setFriendGifts([biz.friendReward]);
       }
 
@@ -1384,16 +1388,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       const expiryDaysVal = rewardExpiryDays ? parseInt(rewardExpiryDays, 10) : null;
 
       let referrerRewardValue = referrerReward;
-      if (referrerRewardType === 'custom') {
-        const validGifts = referrerGifts.filter(g => g.trim() !== '');
-        referrerRewardValue = validGifts.length > 0 ? validGifts.join(' | ') : 'Free Custom Gift';
-      }
-
-      let friendRewardValue = friendReward;
-      if (friendRewardType === 'custom') {
-        const validGifts = friendGifts.filter(g => g.trim() !== '');
-        friendRewardValue = validGifts.length > 0 ? validGifts.join(' | ') : 'Free Custom Gift';
-      }
+      let friendRewardValue = hasFriendReward ? friendReward : 'none';
 
       await EasyRewardService.updateBusiness(business.id, {
         name: bizName,
@@ -3088,16 +3083,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                       >
                         🏷️ Percentage %
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReferrerRewardType('custom');
-                          setReferrerReward('Free hot beverage');
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold transition-all ${referrerRewardType === 'custom' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
-                      >
-                        🎁 Custom Gift
-                      </button>
                     </div>
 
                     {/* Preset buttons based on Type */}
@@ -3131,170 +3116,104 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                       </div>
                     )}
 
-                    {referrerRewardType === 'custom' ? (
-                      <div className="space-y-2.5">
-                        <label className="block text-[10px] text-txtsecondary font-bold uppercase tracking-wider">Configure Custom Gifts (2 or more options)</label>
-                        {referrerGifts.map((gift, index) => (
-                          <div key={index} className="flex gap-2 items-center animate-fade-in">
-                            <input 
-                              type="text" 
-                              value={gift} 
-                              onChange={(e) => {
-                                const newGifts = [...referrerGifts];
-                                newGifts[index] = e.target.value;
-                                setReferrerGifts(newGifts);
-                              }}
-                              placeholder={`e.g. Gift Option #${index + 1} (e.g. Free Coffee)`}
-                              className="flex-1 px-4 py-2.5 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-semibold"
-                              required
-                            />
-                            {referrerGifts.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => setReferrerGifts(referrerGifts.filter((_, idx) => idx !== index))}
-                                className="p-2.5 text-accent-red hover:bg-accent-red/10 rounded-xl transition-all"
-                                title="Remove Gift Option"
-                              >
-                                🗑️
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => setReferrerGifts([...referrerGifts, ''])}
-                          className="px-4 py-2 rounded-xl border border-dashed border-divider hover:border-[#10b981]/50 text-xs font-bold text-txtsecondary hover:text-[#10b981] transition-all flex items-center gap-1.5 w-fit bg-panel"
-                        >
-                          ➕ Add Another Gift Option
-                        </button>
-                      </div>
-                    ) : (
-                      <input 
-                        type="text" 
-                        value={referrerReward} 
-                        onChange={(e) => setReferrerReward(e.target.value)}
-                        placeholder="Write details of the reward here"
-                        className="w-full px-4 py-3 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-medium"
-                        required
-                      />
-                    )}
+                    <input 
+                      type="text" 
+                      value={referrerReward} 
+                      onChange={(e) => setReferrerReward(e.target.value)}
+                      placeholder="Write details of the reward here"
+                      className="w-full px-4 py-3 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-medium"
+                      required
+                    />
                   </div>
 
                   {/* Friend Discount Selection */}
                   <div className="space-y-3">
-                    <label className="block text-sm text-txtprimary font-bold">Friend New Visit Reward Discount</label>
-                    
-                    {/* Tabs */}
-                    <div className="flex border border-divider rounded-xl overflow-hidden bg-hover">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFriendRewardType('cash');
-                          setFriendReward('R50 off your first storefront visit');
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'cash' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
-                      >
-                        💰 Cash Off
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFriendRewardType('percent');
-                          setFriendReward('15% discount on first visit');
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'percent' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
-                      >
-                        🏷️ Percentage %
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFriendRewardType('custom');
-                          setFriendReward('Free custom gift item');
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'custom' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
-                      >
-                        🎁 Custom Gift
-                      </button>
+                    <div className="flex items-center justify-between p-3.5 bg-hover rounded-xl border border-divider">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-txtprimary">Enable Friend Reward Discount</span>
+                        <p className="text-[10px] text-txtsecondary">Give referred friends a discount/reward on their first visit</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={hasFriendReward}
+                          onChange={(e) => setHasFriendReward(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-divider rounded-full peer peer-focus:ring-0 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-divider after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#10b981]"></div>
+                      </label>
                     </div>
 
-                    {/* Presets */}
-                    {friendRewardType === 'cash' && (
-                      <div className="grid grid-cols-3 gap-2">
-                        {['R20', 'R50', 'R100'].map(amt => (
+                    {hasFriendReward ? (
+                      <div className="space-y-3 pt-1">
+                        <label className="block text-xs text-txtprimary font-bold">Friend New Visit Reward Discount</label>
+                        
+                        {/* Tabs */}
+                        <div className="flex border border-divider rounded-xl overflow-hidden bg-hover">
                           <button
-                            key={amt}
                             type="button"
-                            onClick={() => setFriendReward(`${amt} off your first storefront visit`)}
-                            className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(amt) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
+                            onClick={() => {
+                              setFriendRewardType('cash');
+                              setFriendReward('R50 off your first storefront visit');
+                            }}
+                            className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'cash' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
                           >
-                            {amt} Off
+                            💰 Cash Off
                           </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {friendRewardType === 'percent' && (
-                      <div className="grid grid-cols-4 gap-2">
-                        {['10%', '15%', '20%', '25%'].map(pct => (
                           <button
-                            key={pct}
                             type="button"
-                            onClick={() => setFriendReward(`${pct} discount on first visit`)}
-                            className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(pct) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
+                            onClick={() => {
+                              setFriendRewardType('percent');
+                              setFriendReward('15% discount on first visit');
+                            }}
+                            className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'percent' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
                           >
-                            {pct} Off
+                            🏷️ Percentage %
                           </button>
-                        ))}
-                      </div>
-                    )}
+                        </div>
 
-                    {friendRewardType === 'custom' ? (
-                      <div className="space-y-2.5">
-                        <label className="block text-[10px] text-txtsecondary font-bold uppercase tracking-wider">Configure Custom Gifts (2 or more options)</label>
-                        {friendGifts.map((gift, index) => (
-                          <div key={index} className="flex gap-2 items-center animate-fade-in">
-                            <input 
-                              type="text" 
-                              value={gift} 
-                              onChange={(e) => {
-                                const newGifts = [...friendGifts];
-                                newGifts[index] = e.target.value;
-                                setFriendGifts(newGifts);
-                              }}
-                              placeholder={`e.g. Gift Option #${index + 1} (e.g. Free Muffin)`}
-                              className="flex-1 px-4 py-2.5 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-semibold"
-                              required
-                            />
-                            {friendGifts.length > 1 && (
+                        {/* Presets */}
+                        {friendRewardType === 'cash' && (
+                          <div className="grid grid-cols-3 gap-2">
+                            {['R20', 'R50', 'R100'].map(amt => (
                               <button
+                                key={amt}
                                 type="button"
-                                onClick={() => setFriendGifts(friendGifts.filter((_, idx) => idx !== index))}
-                                className="p-2.5 text-accent-red hover:bg-accent-red/10 rounded-xl transition-all"
-                                title="Remove Gift Option"
+                                onClick={() => setFriendReward(`${amt} off your first storefront visit`)}
+                                className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(amt) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
                               >
-                                🗑️
+                                {amt} Off
                               </button>
-                            )}
+                            ))}
                           </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => setFriendGifts([...friendGifts, ''])}
-                          className="px-4 py-2 rounded-xl border border-dashed border-divider hover:border-[#10b981]/50 text-xs font-bold text-txtsecondary hover:text-[#10b981] transition-all flex items-center gap-1.5 w-fit bg-panel"
-                        >
-                          ➕ Add Another Gift Option
-                        </button>
+                        )}
+
+                        {friendRewardType === 'percent' && (
+                          <div className="grid grid-cols-4 gap-2">
+                            {['10%', '15%', '20%', '25%'].map(pct => (
+                              <button
+                                key={pct}
+                                type="button"
+                                onClick={() => setFriendReward(`${pct} discount on first visit`)}
+                                className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(pct) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
+                              >
+                                {pct} Off
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <input 
+                          type="text" 
+                          value={friendReward} 
+                          onChange={(e) => setFriendReward(e.target.value)}
+                          placeholder="Write details of the discount here"
+                          className="w-full px-4 py-3 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-medium"
+                          required
+                        />
                       </div>
                     ) : (
-                      <input 
-                        type="text" 
-                        value={friendReward} 
-                        onChange={(e) => setFriendReward(e.target.value)}
-                        placeholder="Write details of the discount here"
-                        className="w-full px-4 py-3 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-medium"
-                        required
-                      />
+                      <p className="text-[11px] text-txtsecondary italic pl-1">Referred friends won't receive a specific reward discount on signing up, but they can register to refer other friends and start earning.</p>
                     )}
                   </div>
 
