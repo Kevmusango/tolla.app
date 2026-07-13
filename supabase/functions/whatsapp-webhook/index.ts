@@ -105,27 +105,20 @@ serve(async (req: Request) => {
 
         // 3. Find or Create the Tolla User
         let tollaUser = null
+        const cleanPhone = senderPhone.replace(/\D/g, '');
         
-        // Search by exact phone
-        const { data: existingUser } = await supabase
-          .from("tolla_users")
-          .select("*")
-          .eq("phone_number", `+${senderPhone}`)
-          .maybeSingle()
-
-        if (existingUser) {
-          tollaUser = existingUser
-        } else {
-          // Check without the "+" if stored differently
-          const { data: existingUserNoPlus } = await supabase
-            .from("tolla_users")
-            .select("*")
-            .eq("phone_number", senderPhone)
-            .maybeSingle()
+        if (cleanPhone.length >= 9) {
+          const last9Digits = cleanPhone.substring(cleanPhone.length - 9);
           
-          if (existingUserNoPlus) {
-            tollaUser = existingUserNoPlus
-          }
+          const { data: usersList } = await supabase
+            .from("tolla_users")
+            .select("*");
+            
+          tollaUser = (usersList || []).find(u => {
+            if (!u.phone_number) return false;
+            const uClean = u.phone_number.replace(/\D/g, '');
+            return uClean.endsWith(last9Digits);
+          });
         }
 
         if (!tollaUser) {
@@ -200,7 +193,7 @@ serve(async (req: Request) => {
                 type: "template",
                 template: {
                   name: "advocate_invite",
-                  language: { code: "en_US" },
+                  language: { code: "en" },
                   components: [
                     {
                       type: "body",
