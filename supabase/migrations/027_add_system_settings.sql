@@ -9,10 +9,12 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to system_settings
+DROP POLICY IF EXISTS "Public read access to system settings" ON public.system_settings;
 CREATE POLICY "Public read access to system settings" ON public.system_settings
     FOR SELECT USING (TRUE);
 
 -- Allow admins (all logged in authenticated users for simulation) to manage settings
+DROP POLICY IF EXISTS "Public write access to system settings" ON public.system_settings;
 CREATE POLICY "Public write access to system settings" ON public.system_settings
     FOR ALL USING (TRUE);
 
