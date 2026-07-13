@@ -234,6 +234,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [configHours, setConfigHours] = useState<Record<string, { open: string; close: string; closed: boolean }>>({});
   const [configGallery, setConfigGallery] = useState<string[]>([]);
   const [isDraggingGallery, setIsDraggingGallery] = useState(false);
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+  const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [configLocName, setConfigLocName] = useState('');
   const [configLocAddress, setConfigLocAddress] = useState('');
   const [configLocPhone, setConfigLocPhone] = useState('');
@@ -611,6 +613,70 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleLogoDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingLogo(false);
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
+      showToast('Only image files are allowed', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setBizLogoUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
+      showToast('Only image files are allowed', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setBizLogoUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBannerDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingBanner(false);
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
+      showToast('Only image files are allowed', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setConfigLocBannerUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBannerFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
+      showToast('Only image files are allowed', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setConfigLocBannerUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveLocationConfig = async () => {
@@ -3153,15 +3219,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-txtprimary font-bold mb-1.5 font-sans">Business Logo Image URL</label>
+                    <label className="block text-sm text-txtprimary font-bold mb-1.5 font-sans">Business Logo / Image</label>
                     <input 
-                      type="text" 
-                      value={bizLogoUrl} 
-                      onChange={(e) => setBizLogoUrl(e.target.value)}
-                      placeholder="e.g. https://mywebsite.com/logo.png"
-                      className="w-full px-4 py-3 rounded-xl border border-divider text-sm text-txtprimary focus:border-[#10b981] outline-none bg-hover font-semibold"
+                      id="logo-file-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoFileInput}
+                      className="hidden"
                     />
-                    <p className="text-[10px] text-txtsecondary mt-1">Provide a link to your business logo image. If you don't have a logo, you can link any storefront image.</p>
+                    {bizLogoUrl ? (
+                      <div className="flex items-center gap-4 p-4 rounded-xl border border-divider bg-hover">
+                        <div className="w-16 h-16 rounded-xl border border-divider overflow-hidden bg-panel flex items-center justify-center shrink-0">
+                          <img src={bizLogoUrl} alt="Business Logo Preview" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-bold text-txtprimary font-sans">Active storefront image loaded</p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById('logo-file-input')?.click()}
+                              className="px-2.5 py-1 rounded bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/25 text-[10px] font-bold transition-all cursor-pointer"
+                            >
+                              Change Image
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setBizLogoUrl('')}
+                              className="px-2.5 py-1 rounded bg-rose-500/10 text-rose-500 hover:bg-rose-500/25 text-[10px] font-bold transition-all cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onDragOver={e => { e.preventDefault(); setIsDraggingLogo(true); }}
+                        onDragLeave={() => setIsDraggingLogo(false)}
+                        onDrop={handleLogoDrop}
+                        onClick={() => document.getElementById('logo-file-input')?.click()}
+                        className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                          isDraggingLogo
+                            ? 'border-[#10b981] bg-[#10b981]/10'
+                            : 'border-divider hover:border-[#10b981]/50 hover:bg-hover/50'
+                        }`}
+                      >
+                        <Upload className="w-5 h-5 text-txtsecondary mx-auto mb-2" />
+                        <p className="text-xs text-txtsecondary font-semibold">Drag & drop your logo here, or <span className="text-[#10b981]">click to browse</span></p>
+                        <p className="text-[10px] text-txtsecondary mt-0.5 font-medium">PNG, JPG, WEBP or SVG up to 5MB. If you don't have a logo, upload any storefront picture.</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Referrer Reward Selection */}
@@ -3255,8 +3362,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3.5 bg-hover rounded-xl border border-divider">
                       <div className="space-y-0.5">
-                        <span className="text-xs font-bold text-txtprimary">Enable Friend Reward Discount</span>
-                        <p className="text-[10px] text-txtsecondary">Give referred friends a discount/reward on their first visit</p>
+                        <span className="text-xs font-bold text-txtprimary font-sans">Enable Friend Reward Discount</span>
+                        <p className="text-[10px] text-txtsecondary font-sans">Give referred friends a discount/reward on checkout</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer select-none">
                         <input
@@ -3271,7 +3378,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
                     {hasFriendReward ? (
                       <div className="space-y-3 pt-1">
-                        <label className="block text-xs text-txtprimary font-bold">Friend New Visit Reward Discount</label>
+                        <label className="block text-xs text-txtprimary font-bold">Friend Reward Discount</label>
                         
                         {/* Tabs */}
                         <div className="flex border border-divider rounded-xl overflow-hidden bg-hover">
@@ -3279,7 +3386,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             type="button"
                             onClick={() => {
                               setFriendRewardType('cash');
-                              setFriendReward('R50 off your first storefront visit');
+                              setFriendReward('R50 off checkout');
                             }}
                             className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'cash' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
                           >
@@ -3289,7 +3396,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             type="button"
                             onClick={() => {
                               setFriendRewardType('percent');
-                              setFriendReward('15% discount on first visit');
+                              setFriendReward('15% discount on checkout');
                             }}
                             className={`flex-1 py-2 text-xs font-bold transition-all ${friendRewardType === 'percent' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
                           >
@@ -3304,7 +3411,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                               <button
                                 key={amt}
                                 type="button"
-                                onClick={() => setFriendReward(`${amt} off your first storefront visit`)}
+                                onClick={() => setFriendReward(`${amt} off checkout`)}
                                 className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(amt) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
                               >
                                 {amt} Off
@@ -3319,7 +3426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                               <button
                                 key={pct}
                                 type="button"
-                                onClick={() => setFriendReward(`${pct} discount on first visit`)}
+                                onClick={() => setFriendReward(`${pct} discount on checkout`)}
                                 className={`py-2 rounded-xl border text-xs font-bold transition-all ${friendReward.startsWith(pct) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
                               >
                                 {pct} Off
@@ -3333,14 +3440,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             <>
                               <p className="font-bold text-txtprimary flex items-center gap-1">💡 Cash Off Mode (Flat Discount)</p>
                               <p className="text-[11px] leading-relaxed">
-                                <strong>Example:</strong> If you set this to <strong>R50 off your first storefront visit</strong>, the referred friend receives a flat coupon for <strong>R50.00 off</strong> their bill when they checkout for the first time.
+                                <strong>Example:</strong> If you set this to <strong>R50 off checkout</strong>, the referred friend receives a flat coupon for <strong>R50.00 off</strong> their bill when they checkout.
                               </p>
                             </>
                           ) : (
                             <>
                               <p className="font-bold text-txtprimary flex items-center gap-1">💡 Percentage % Mode (Discount off bill)</p>
                               <p className="text-[11px] leading-relaxed">
-                                <strong>Example:</strong> If you set this to <strong>15% discount on first visit</strong>, the referred friend gets a <strong>15% discount</strong> on their first check-out transaction.
+                                <strong>Example:</strong> If you set this to <strong>15% discount on checkout</strong>, the referred friend gets a <strong>15% discount</strong> on their checkout transaction.
                               </p>
                             </>
                           )}
@@ -4469,15 +4576,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] text-txtsecondary font-semibold uppercase mb-1">Background Banner Image URL</label>
+                    <label className="block text-[10px] text-txtsecondary font-semibold uppercase mb-1">Background Banner Image</label>
                     <input 
-                      type="text" 
-                      value={configLocBannerUrl} 
-                      onChange={(e) => setConfigLocBannerUrl(e.target.value)}
-                      placeholder="e.g. https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f"
-                      className="w-full px-3 py-2 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                      id="banner-file-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerFileInput}
+                      className="hidden"
                     />
-                    <p className="text-[9px] text-txtsecondary mt-1">This image will show up as the top background image on the referral landing pages.</p>
+                    {configLocBannerUrl ? (
+                      <div className="flex items-center gap-4 p-4 rounded-xl border border-divider bg-hover">
+                        <div className="w-24 h-12 rounded-lg border border-divider overflow-hidden bg-panel flex items-center justify-center shrink-0 animate-fade-in">
+                          <img src={configLocBannerUrl} alt="Background Banner Preview" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[11px] font-bold text-txtprimary font-sans">Active location banner image loaded</p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById('banner-file-input')?.click()}
+                              className="px-2 py-0.5 rounded bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/25 text-[9px] font-bold transition-all cursor-pointer font-sans"
+                            >
+                              Change Banner
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfigLocBannerUrl('')}
+                              className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-500 hover:bg-rose-500/25 text-[9px] font-bold transition-all cursor-pointer font-sans"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onDragOver={e => { e.preventDefault(); setIsDraggingBanner(true); }}
+                        onDragLeave={() => setIsDraggingBanner(false)}
+                        onDrop={handleBannerDrop}
+                        onClick={() => document.getElementById('banner-file-input')?.click()}
+                        className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                          isDraggingBanner
+                            ? 'border-[#10b981] bg-[#10b981]/10'
+                            : 'border-divider hover:border-[#10b981]/50 hover:bg-hover/50'
+                        }`}
+                      >
+                        <Upload className="w-4.5 h-4.5 text-txtsecondary mx-auto mb-1.5" />
+                        <p className="text-[11px] text-txtsecondary font-semibold">Drag & drop your banner here, or <span className="text-[#10b981]">click to browse</span></p>
+                        <p className="text-[9px] text-txtsecondary mt-0.5 font-medium">PNG, JPG, WEBP, SVG up to 5MB. Shows as the hero background on referral landing pages.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
