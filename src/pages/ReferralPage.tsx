@@ -131,6 +131,14 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
         }
         setVisitedStores(storesData);
 
+        // Determine view mode dynamically
+        const savedUserId = localStorage.getItem('easyreward_tolla_user_id');
+        if (savedUserId && (savedUserId === cust.tollaUserId || savedUserId === cust.id)) {
+          setView('referrer');
+        } else {
+          setView('friend');
+        }
+
         // Track page view event
         await EasyRewardService.trackEvent(loc.id, 'page_view', cust.id);
       } catch (err) {
