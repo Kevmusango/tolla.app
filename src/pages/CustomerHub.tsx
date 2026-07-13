@@ -315,7 +315,14 @@ export const CustomerHub: React.FC<CustomerHubProps> = ({ referralCode, onNaviga
                           <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                           <div className="space-y-0.5">
                             <span className="block font-bold text-slate-700">Opening Hours:</span>
-                            <span className="text-[10px] text-slate-400 leading-normal whitespace-pre-line">{rel.location.openingHours}</span>
+                            <span className="text-[10px] text-slate-400 leading-normal whitespace-pre-line">
+                              {typeof rel.location.openingHours === 'string'
+                                ? rel.location.openingHours
+                                : Object.entries(rel.location.openingHours || {})
+                                    .map(([day, hrs]: [string, any]) => `${day}: ${hrs.closed ? 'Closed' : `${hrs.open} - ${hrs.close}`}`)
+                                    .join('\n')
+                              }
+                            </span>
                           </div>
                         </div>
                       )}
