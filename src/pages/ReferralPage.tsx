@@ -22,11 +22,12 @@ const renderStars = (rating: number) => {
 
 interface ReferralPageProps {
   referralCode: string;
+  businessSlug?: string;
   initialView?: 'referrer' | 'friend';
   onNavigate: (route: string) => void;
 }
 
-export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initialView = 'referrer', onNavigate }) => {
+export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, businessSlug, initialView = 'referrer', onNavigate }) => {
   const [view, setView] = useState<'referrer' | 'friend'>(initialView);
   const [visitedStores, setVisitedStores] = useState<Array<{
     relationship: CustomerBusiness;
@@ -69,7 +70,21 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
   useEffect(() => {
     const loadDetails = async () => {
       try {
-        const cust = await EasyRewardService.getCustomerByReferralCode(referralCode);
+        const businesses = await EasyRewardService.getBusinesses();
+        let biz = null;
+        if (businessSlug) {
+          biz = businesses.find(b => b.slug.toLowerCase() === businessSlug.toLowerCase());
+        }
+
+        let cust = null;
+        if (biz) {
+          cust = await EasyRewardService.getCustomerByReferralCodeAndBusiness(referralCode, biz.id);
+        }
+        
+        if (!cust) {
+          cust = await EasyRewardService.getCustomerByReferralCode(referralCode);
+        }
+
         if (!cust) return;
         setCustomer(cust);
 
@@ -81,8 +96,9 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
         const userWallets = await EasyRewardService.getWallets(cust.id);
         setWallets(userWallets);
 
-        const businesses = await EasyRewardService.getBusinesses();
-        const biz = businesses.find(b => b.id === cust.businessId);
+        if (!biz) {
+          biz = businesses.find(b => b.id === cust.businessId);
+        }
         if (!biz) return;
         setBusiness(biz);
 
@@ -587,19 +603,19 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
             <div className="space-y-6">
               
               {/* Profile Card */}
-              <div className="glass-panel p-6 rounded-2xl shadow-xl border border-slate-800 space-y-4">
+              <div className="glass-panel p-6 rounded-2xl shadow-xl border border-divider space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-brand-500/10 border border-brand-500/25 flex items-center justify-center font-extrabold text-brand-400 text-sm">
                       👤
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-sm text-white">Tolla Rewards Wallet</h3>
-                      <p className="text-[10px] text-slate-400">{tollaUser?.phoneNumber || tollaUser?.emailAddress || 'My Profile'}</p>
+                      <h3 className="font-extrabold text-sm text-txtprimary">Tolla Rewards Wallet</h3>
+                      <p className="text-[10px] text-txtsecondary">{tollaUser?.phoneNumber || tollaUser?.emailAddress || 'My Profile'}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Universal ID</span>
+                    <span className="text-[9px] font-bold text-txtsecondary uppercase tracking-widest block">Universal ID</span>
                     <span className="text-xs font-mono font-extrabold text-brand-400 select-all">{tollaUser?.id || referralCode}</span>
                   </div>
                 </div>
@@ -607,10 +623,10 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
 
               {/* Visited Businesses & Wallets list */}
               <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">My Joined Businesses &amp; Wallets</h3>
+                <h3 className="text-xs font-black uppercase text-txtsecondary tracking-wider">My Joined Businesses &amp; Wallets</h3>
                 
                 {visitedStores.length === 0 ? (
-                  <div className="glass-panel p-6 text-center text-xs text-slate-500 border border-slate-800 rounded-2xl">
+                  <div className="glass-panel p-6 text-center text-xs text-txtsecondary border border-divider rounded-2xl">
                     🎁 You haven't visited any businesses yet. Scan a store QR code to earn rewards!
                   </div>
                 ) : (
@@ -621,20 +637,20 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
                     const otherWallet = store.wallets.find(w => w.rewardType !== 'cash' && w.balance > 0);
                     
                     return (
-                      <div key={idx} className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+                      <div key={idx} className="glass-panel p-6 rounded-2xl border border-divider space-y-4">
                         
                         {/* Store info header */}
                         <div className="flex justify-between items-start gap-4">
                           <div className="space-y-1">
-                            <h4 className="font-extrabold text-sm text-white">{store.business.name}</h4>
-                            <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-500" /> {store.location.address}
+                            <h4 className="font-extrabold text-sm text-txtprimary">{store.business.name}</h4>
+                            <p className="text-[10px] text-txtsecondary flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400" /> {store.location.address}
                             </p>
                           </div>
                           
                           {/* Wallet Badge */}
                           <div className="text-right shrink-0">
-                            <span className="text-[8px] font-bold text-slate-500 uppercase block tracking-wider">My Balance</span>
+                            <span className="text-[8px] font-bold text-txtsecondary uppercase block tracking-wider">My Balance</span>
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[#10b981] text-xs font-black">
                               {cashBal > 0 ? `R${cashBal}` : (otherWallet ? otherWallet.description : 'R0')}
                             </span>
@@ -647,31 +663,31 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.location.address)}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 hover:text-white hover:border-slate-700 flex items-center gap-1 transition-all"
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 border border-divider text-[10px] font-bold text-slate-700 hover:bg-slate-200 hover:text-slate-900 flex items-center gap-1 transition-all"
                           >
-                            <MapPin className="w-3 h-3 text-brand-400" /> Get Directions
+                            <MapPin className="w-3 h-3 text-emerald-500" /> Get Directions
                           </a>
                           <a 
                             href={`tel:${store.location.phoneNumber}`}
-                            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 hover:text-white hover:border-slate-700 flex items-center gap-1 transition-all"
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 border border-divider text-[10px] font-bold text-slate-700 hover:bg-slate-200 hover:text-slate-900 flex items-center gap-1 transition-all"
                           >
                             <Phone className="w-3 h-3 text-slate-400" /> Call Store
                           </a>
                         </div>
 
                         {/* List of active specials & sharing CTAs for this business */}
-                        <div className="space-y-3 pt-2.5 border-t border-slate-800/80">
-                          <p className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500">Specials You Can Share &amp; Earn:</p>
+                        <div className="space-y-3 pt-2.5 border-t border-divider">
+                          <p className="text-[9px] uppercase tracking-wider font-extrabold text-txtsecondary">Specials You Can Share &amp; Earn:</p>
                           
                           {store.promotions.length === 0 ? (
-                            <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-900/60 flex items-center justify-between text-xs">
+                            <div className="p-4 rounded-xl bg-hover border border-divider flex items-center justify-between text-xs">
                               <div>
-                                <p className="font-bold text-slate-300">Invite Friends</p>
-                                <p className="text-[10px] text-slate-500">Get {store.business.referrerReward} when they join.</p>
+                                <p className="font-bold text-txtprimary">Invite Friends</p>
+                                <p className="text-[10px] text-txtsecondary">Get {store.business.referrerReward} when they join.</p>
                               </div>
                               <button 
                                 onClick={handleShare}
-                                className="px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-slate-950 text-[10px] font-black uppercase flex items-center gap-1 cursor-pointer transition-all shadow-md"
+                                className="px-3.5 py-2 rounded-xl bg-[#10b981] hover:bg-[#0e9f6e] text-white text-[10px] font-black uppercase flex items-center gap-1 cursor-pointer transition-all shadow-md"
                               >
                                 <Share2 className="w-3.5 h-3.5" /> Share Invite
                               </button>
@@ -680,13 +696,13 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
                             store.promotions.map((promo, pIdx) => {
                               const shareText = `Hey! Grab this awesome deal at ${store.business.name}: "${promo.title}". Claim your reward using my link: ${window.location.origin}/r/${referralCode}`;
                               return (
-                                <div key={pIdx} className="p-4 rounded-xl bg-slate-950/50 border border-slate-850/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div key={pIdx} className="p-4 rounded-xl bg-hover border border-divider flex flex-col md:flex-row md:items-center justify-between gap-4">
                                   <div className="space-y-1">
-                                    <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] bg-brand-500/10 border border-brand-500/20 text-brand-300 font-bold uppercase">
+                                    <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] bg-brand-500/10 border border-brand-500/20 text-[#10b981] font-bold uppercase">
                                       🎁 Unlocked Special
                                     </span>
-                                    <p className="text-xs font-black text-slate-200">{promo.title}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-md">{promo.description}</p>
+                                    <p className="text-xs font-black text-txtprimary">{promo.title}</p>
+                                    <p className="text-[10px] text-txtsecondary font-medium leading-relaxed max-w-md">{promo.description}</p>
                                   </div>
                                   <a 
                                     href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
@@ -711,7 +727,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
             </div>
           ) : (
             
-            <div className="glass-panel p-6 rounded-2xl shadow-xl border border-slate-800 space-y-6">
+            <div className="glass-panel p-6 rounded-2xl shadow-xl border border-divider space-y-6">
               {refereeMode !== 'code' ? (
                 <div className="space-y-5 text-center">
                   <Award className="w-8 h-8 text-brand-400 mx-auto mb-2" />
@@ -902,11 +918,11 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, initia
                   </div>
 
                   {/* Discount Code */}
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center border-dashed relative">
+                  <div className="bg-hover/80 border border-divider rounded-2xl p-6 flex flex-col items-center justify-center border-dashed relative">
                     <div className="absolute top-2 right-2">
                       <button 
                         onClick={handleCopyLink}
-                        className="p-2 text-xs text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-850 rounded-lg transition-all"
+                        className="p-2 text-xs text-slate-500 hover:text-slate-800 bg-slate-200 hover:bg-slate-300 rounded-lg transition-all"
                       >
                         {copied ? 'Copied' : 'Copy'}
                       </button>

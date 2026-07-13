@@ -554,6 +554,92 @@ export const EasyRewardService = {
     };
   },
 
+  getCustomerByReferralCodeAndBusiness: async (code: string, businessId: string): Promise<CustomerBusiness | undefined> => {
+    const { data: users } = await supabase.from('tolla_users').select('*');
+    if (!users) return undefined;
+    
+    const clean = code.trim().toUpperCase();
+    const user = users.find(u => 
+      u.referral_code?.toUpperCase() === clean ||
+      u.id.toUpperCase() === clean ||
+      u.id.toUpperCase().replace('TR-', '') === clean
+    );
+    if (!user) return undefined;
+    
+    const { data: cb } = await supabase
+      .from('customer_businesses')
+      .select('*')
+      .eq('tolla_user_id', user.id)
+      .eq('business_id', businessId)
+      .maybeSingle();
+      
+    if (!cb) return undefined;
+    
+    return {
+      id: cb.id,
+      tollaUserId: cb.tolla_user_id,
+      businessId: cb.business_id,
+      locationId: cb.location_id,
+      customIdentifier: cb.custom_identifier || undefined,
+      referralScore: cb.referral_score,
+      connectedAt: cb.connected_at,
+      lastActivityAt: cb.last_activity_at || undefined,
+      referralCode: user.referral_code
+    };
+  },
+
+  getCustomerHubData: async (referralCode: string): Promise<any> => {
+    const { data: user, error: userError } = await supabase
+      .from('tolla_users')
+      .select('*')
+      .eq('referral_code', referralCode)
+      .maybeSingle();
+
+    if (userError || !user) return null;
+
+    const { data: cbList, error: cbError } = await supabase
+      .from('customer_businesses')
+      .select('*, businesses(*)')
+      .eq('tolla_user_id', user.id);
+
+    if (cbError || !cbList) return { user, relationships: [] };
+
+    const relationships = await Promise.all(cbList.map(async (cb: any) => {
+      const biz = cb.businesses;
+      const wallets = await EasyRewardService.getWallets(cb.id);
+      const locations = await EasyRewardService.getLocations(biz.id);
+      const primaryLoc = locations.find((l: any) => l.id === cb.location_id) || locations[0] || null;
+      
+      return {
+        relationshipId: cb.id,
+        business: {
+          id: biz.id,
+          name: biz.name,
+          slug: biz.slug,
+          logoUrl: biz.logo_url,
+          industry: biz.industry,
+          referrerReward: biz.referrer_reward,
+          friendReward: biz.friend_reward
+        },
+        location: primaryLoc,
+        wallets,
+        referralScore: cb.referral_score
+      };
+    }));
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        phoneNumber: user.phone_number,
+        emailAddress: user.email_address,
+        referralCode: user.referral_code,
+        createdAt: user.created_at
+      },
+      relationships
+    };
+  },
+
   getTollaUser: async (id: string): Promise<TollaUser | undefined> => {
     const { data, error } = await supabase
       .from('tolla_users')

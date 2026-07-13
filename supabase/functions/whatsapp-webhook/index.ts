@@ -175,7 +175,7 @@ serve(async (req: Request) => {
 
         // 5. Dispatch WhatsApp advocate invite template back to user
         if (WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_ACCESS_TOKEN) {
-          const referralLink = `${APP_URL}/r/${tollaUser.id}`
+          const referralLink = `${APP_URL}/me/${tollaUser.referral_code || tollaUser.id}`
           console.log(`[WhatsApp Webhook] Dispatching welcome template to +${senderPhone}...`)
 
           const metaRes = await fetch(

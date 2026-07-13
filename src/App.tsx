@@ -6,6 +6,7 @@ import { CustomerScan } from './pages/CustomerScan';
 import { ReferralPage } from './pages/ReferralPage';
 import { Dashboard } from './pages/Dashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { CustomerHub } from './pages/CustomerHub';
 import { EasyRewardService } from './services/EasyRewardService';
 import { supabase } from './services/supabase';
 
@@ -190,6 +191,10 @@ export default function App() {
         const code = pathname.substring(3);
         setReferralCode(code);
         setRoute('referral-page');
+      } else if (pathname.startsWith('/me/')) {
+        const code = pathname.substring(4);
+        setReferralCode(code);
+        setRoute('customer-hub');
       } else if (pathname === '/scan') {
         setRoute('scan');
       } else if (pathname === '/onboard') {
@@ -246,6 +251,11 @@ export default function App() {
       url = `/b/${slug}/r/${code}`;
       setReferralCode(code);
     }
+    else if (newRoute === 'customer-hub') {
+      const code = params?.code || referralCode;
+      url = `/me/${code}`;
+      setReferralCode(code);
+    }
 
     // Use replaceState for dashboard to avoid back-button loop
     if (newRoute === 'dashboard') {
@@ -293,6 +303,16 @@ export default function App() {
       {route === 'referral-page' && (
         <div className="mobile-theme min-h-screen bg-canvas text-txtprimary">
           <ReferralPage 
+            referralCode={referralCode} 
+            businessSlug={businessSlug || undefined}
+            onNavigate={navigate} 
+          />
+        </div>
+      )}
+
+      {route === 'customer-hub' && (
+        <div className="mobile-theme min-h-screen bg-slate-50 text-slate-800">
+          <CustomerHub 
             referralCode={referralCode} 
             onNavigate={navigate} 
           />
