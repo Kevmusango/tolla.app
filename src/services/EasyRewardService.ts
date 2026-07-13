@@ -146,28 +146,37 @@ export const EasyRewardService = {
     if (error) throw error;
     if (!data) return [];
 
-    return data.map(l => ({
-      id: l.id,
-      businessId: l.business_id,
-      name: l.name,
-      address: l.address,
-      googleMapsLink: l.google_maps_link || undefined,
-      whatsappNumber: l.whatsapp_number,
-      phoneNumber: l.phone_number,
-      openingHours: l.opening_hours,
-      galleryUrls: l.gallery_urls || [],
-      bannerUrl: l.banner_url || undefined,
-      currentPromotionId: l.current_promotion_id || undefined,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/b/${l.business_id}/scan?loc=${l.id}`)}`,
-      customIdentifierName: l.custom_identifier_name || undefined,
-      verificationMethod: l.verification_method || undefined,
-      services: l.services || [],
-      industry: l.industry || undefined,
-      customIndustry: l.custom_industry || undefined,
-      businessType: l.business_type || undefined,
-      qrPosterText: l.qr_poster_text || undefined,
-      createdAt: l.created_at
-    }));
+    const { data: businesses } = await supabase
+      .from('businesses')
+      .select('id, slug');
+
+    return data.map(l => {
+      const biz = (businesses || []).find(b => b.id === l.business_id);
+      const bizSlug = biz ? biz.slug : l.business_id;
+      const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${l.id}`;
+      return {
+        id: l.id,
+        businessId: l.business_id,
+        name: l.name,
+        address: l.address,
+        googleMapsLink: l.google_maps_link || undefined,
+        whatsappNumber: l.whatsapp_number,
+        phoneNumber: l.phone_number,
+        openingHours: l.opening_hours,
+        galleryUrls: l.gallery_urls || [],
+        bannerUrl: l.banner_url || undefined,
+        currentPromotionId: l.current_promotion_id || undefined,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(waUrl)}`,
+        customIdentifierName: l.custom_identifier_name || undefined,
+        verificationMethod: l.verification_method || undefined,
+        services: l.services || [],
+        industry: l.industry || undefined,
+        customIndustry: l.custom_industry || undefined,
+        businessType: l.business_type || undefined,
+        qrPosterText: l.qr_poster_text || undefined,
+        createdAt: l.created_at
+      };
+    });
   },
   
   createLocation: async (data: Omit<Location, 'id' | 'createdAt' | 'qrCodeUrl'>): Promise<Location> => {
@@ -195,6 +204,14 @@ export const EasyRewardService = {
 
     if (error) throw error;
 
+    const { data: biz } = await supabase
+      .from('businesses')
+      .select('slug')
+      .eq('id', created.business_id)
+      .single();
+    const bizSlug = biz ? biz.slug : created.business_id;
+    const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${created.id}`;
+
     return {
       id: created.id,
       businessId: created.business_id,
@@ -207,7 +224,7 @@ export const EasyRewardService = {
       galleryUrls: created.gallery_urls || [],
       bannerUrl: created.banner_url || undefined,
       currentPromotionId: created.current_promotion_id || undefined,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/b/${created.business_id}/scan?loc=${created.id}`)}`,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(waUrl)}`,
       customIdentifierName: created.custom_identifier_name || undefined,
       verificationMethod: created.verification_method || undefined,
       services: created.services || [],
@@ -246,6 +263,14 @@ export const EasyRewardService = {
 
     if (error) throw error;
 
+    const { data: biz } = await supabase
+      .from('businesses')
+      .select('slug')
+      .eq('id', updated.business_id)
+      .single();
+    const bizSlug = biz ? biz.slug : updated.business_id;
+    const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${updated.id}`;
+
     return {
       id: updated.id,
       businessId: updated.business_id,
@@ -258,7 +283,7 @@ export const EasyRewardService = {
       galleryUrls: updated.gallery_urls || [],
       bannerUrl: updated.banner_url || undefined,
       currentPromotionId: updated.current_promotion_id || undefined,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/b/${updated.business_id}/scan?loc=${updated.id}`)}`,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(waUrl)}`,
       customIdentifierName: updated.custom_identifier_name || undefined,
       verificationMethod: updated.verification_method || undefined,
       services: updated.services || [],
