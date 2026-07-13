@@ -156,7 +156,7 @@ export const EasyRewardService = {
     return data.map(l => {
       const biz = (businesses || []).find(b => b.id === l.business_id);
       const bizSlug = biz ? biz.slug : l.business_id;
-      const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${l.id}`;
+      const waUrl = `https://wa.me/27833977936?text=Hi!%20Join%20${bizSlug}%20${l.id}`;
       return {
         id: l.id,
         businessId: l.business_id,
@@ -213,7 +213,7 @@ export const EasyRewardService = {
       .eq('id', created.business_id)
       .single();
     const bizSlug = biz ? biz.slug : created.business_id;
-    const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${created.id}`;
+    const waUrl = `https://wa.me/27833977936?text=Hi!%20Join%20${bizSlug}%20${created.id}`;
 
     return {
       id: created.id,
@@ -272,7 +272,7 @@ export const EasyRewardService = {
       .eq('id', updated.business_id)
       .single();
     const bizSlug = biz ? biz.slug : updated.business_id;
-    const waUrl = `https://wa.me/27833977936?text=Join%20${bizSlug}%20${updated.id}`;
+    const waUrl = `https://wa.me/27833977936?text=Hi!%20Join%20${bizSlug}%20${updated.id}`;
 
     return {
       id: updated.id,

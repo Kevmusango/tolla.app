@@ -359,7 +359,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       return;
     }
 
-    const qrUrl = activeLocation.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`https://wa.me/27833977936?text=Join%20${business?.slug || ''}%20${activeLocation.id}`)}`;
+    const qrUrl = activeLocation.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`https://wa.me/27833977936?text=Hi!%20Join%20${business?.slug || ''}%20${activeLocation.id}`)}`;
 
     printWindow.document.write(`
       <!DOCTYPE html>
