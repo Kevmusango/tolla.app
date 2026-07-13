@@ -3204,6 +3204,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                           </button>
                         ))}
                       </div>
+                    )}
+
                     <div className="p-3.5 rounded-xl bg-hover border border-divider text-xs space-y-2 text-txtsecondary">
                       {referrerRewardType === 'cash' ? (
                         <>
@@ -3307,6 +3309,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                               </button>
                             ))}
                           </div>
+                        )}
+
                         <div className="p-3.5 rounded-xl bg-hover border border-divider text-xs space-y-2 text-txtsecondary">
                           {friendRewardType === 'cash' ? (
                             <>
