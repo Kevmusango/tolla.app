@@ -1,0 +1,25 @@
+-- Create Businesses Table (Circular-Dependency Free)
+CREATE TABLE IF NOT EXISTS public.businesses (
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    logo_url TEXT,
+    status TEXT NOT NULL CHECK (status IN ('active', 'trial', 'suspended', 'cancelled')) DEFAULT 'trial',
+    referrer_reward TEXT NOT NULL,
+    friend_reward TEXT NOT NULL,
+    verification_method TEXT NOT NULL CHECK (verification_method IN ('code', 'code_phone', 'code_identifier', 'manager_approval')) DEFAULT 'code',
+    custom_identifier_label TEXT,
+    limit_one_per_friend BOOLEAN NOT NULL DEFAULT TRUE,
+    require_purchase BOOLEAN NOT NULL DEFAULT FALSE,
+    minimum_spend NUMERIC(10,2),
+    reward_expiry_days INT,
+    limit_one_per_day BOOLEAN NOT NULL DEFAULT FALSE,
+    first_time_only BOOLEAN NOT NULL DEFAULT TRUE,
+    block_self_referral BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    deleted_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL
+);
