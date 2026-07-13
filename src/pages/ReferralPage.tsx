@@ -346,25 +346,6 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
   return (
     <div className="min-h-screen bg-canvas text-txtprimary flex flex-col justify-between selection:bg-accent-primary selection:text-white">
       
-      {/* Test / Preview Mode Switcher */}
-      <div className="bg-panel/80 border-b border-divider px-4 py-2 flex justify-between items-center text-xs sticky top-0 z-50 backdrop-blur">
-        <span className="text-txtsecondary font-mono">Demo View Switch:</span>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setView('referrer')}
-            className={`px-3 py-1 rounded-md transition-all ${view === 'referrer' ? 'bg-accent-primary text-white font-bold' : 'bg-canvas hover:bg-hover border border-divider text-txtsecondary'}`}
-          >
-            Referrer View (Sharing)
-          </button>
-          <button 
-            onClick={() => setView('friend')}
-            className={`px-3 py-1 rounded-md transition-all ${view === 'friend' ? 'bg-accent-primary text-white font-bold' : 'bg-canvas hover:bg-hover border border-divider text-txtsecondary'}`}
-          >
-            Friend View (Redeeming)
-          </button>
-        </div>
-      </div>
-
       {/* Hero Banner with Glass Overlays */}
       <div 
         className="h-64 w-full bg-cover bg-center relative"
