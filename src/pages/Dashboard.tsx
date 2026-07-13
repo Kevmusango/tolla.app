@@ -3067,11 +3067,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                         type="button"
                         onClick={() => {
                           setReferrerRewardType('cash');
-                          setReferrerReward('R50 cash reward on checkout');
+                          setReferrerReward('R50 discount on checkout');
                         }}
                         className={`flex-1 py-2 text-xs font-bold transition-all ${referrerRewardType === 'cash' ? 'bg-[#10b981] text-white' : 'text-txtsecondary hover:text-txtprimary'}`}
                       >
-                        💰 Cash Payout
+                        💰 Cash Discount
                       </button>
                       <button
                         type="button"
@@ -3092,10 +3092,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                           <button
                             key={amt}
                             type="button"
-                            onClick={() => setReferrerReward(`${amt} cash reward on checkout`)}
+                            onClick={() => setReferrerReward(`${amt} discount on checkout`)}
                             className={`py-2 rounded-xl border text-xs font-bold transition-all ${referrerReward.startsWith(amt) ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]' : 'border-divider bg-panel text-txtsecondary'}`}
                           >
-                            {amt} Payout
+                            {amt} Discount
                           </button>
                         ))}
                       </div>
