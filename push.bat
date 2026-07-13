@@ -25,8 +25,8 @@ git remote remove origin >nul 2>&1
 git remote add origin https://github.com/Kevmusango/tolla.app.git
 echo.
 
-echo [6/6] Pushing code to GitHub...
-git push -u origin main
+echo [6/6] Pushing code to GitHub (with force overwrite to align with initial repo)...
+git push -u origin main --force
 echo.
 
 echo ========================================================

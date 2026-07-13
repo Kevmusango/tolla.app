@@ -17,7 +17,7 @@ Write-Host "🔗 Associating remote repository: https://github.com/Kevmusango/to
 git remote remove origin 2>$null
 git remote add origin https://github.com/Kevmusango/tolla.app.git
 
-Write-Host "🚀 Pushing code to GitHub..." -ForegroundColor Cyan
-git push -u origin main
+Write-Host "🚀 Pushing code to GitHub (with force overwrite to align with initial repo)..." -ForegroundColor Cyan
+git push -u origin main --force
 
 Write-Host "✅ Code successfully committed and pushed to Kevmusango/tolla.app!" -ForegroundColor Green
