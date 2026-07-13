@@ -217,6 +217,38 @@ serve(async (req: Request) => {
         } else {
           console.error("[WhatsApp Webhook] Meta credentials (ID/Token) are not set inside Edge Function variables.")
         }
+      } else {
+        console.log(`[WhatsApp Webhook] Non-signup message received from ${senderPhone}. Sending fallback welcome text...`)
+        if (WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_ACCESS_TOKEN) {
+          const metaRes = await fetch(
+            `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: senderPhone,
+                type: "text",
+                text: {
+                  body: "Hello! Welcome to Tolla. To access your rewards card and view your points, please scan the QR code at any participating storefront, or visit https://tolla.app. If you are trying to join a specific store's program, send 'Join [store-name]'."
+                }
+              })
+            }
+          )
+          
+          if (!metaRes.ok) {
+            const metaError = await metaRes.text()
+            console.error("[WhatsApp Webhook] Meta API fallback welcome dispatch failed:", metaError)
+          } else {
+            console.log(`[WhatsApp Webhook] Fallback welcome successfully dispatched to +${senderPhone}!`)
+          }
+        } else {
+          console.error("[WhatsApp Webhook] Meta credentials (ID/Token) are not set inside Edge Function variables.")
+        }
       }
 
       return new Response(JSON.stringify({ status: "processed" }), {
