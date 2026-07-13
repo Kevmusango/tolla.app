@@ -109,6 +109,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     branchCode: '250655'
   });
 
+  // Unique list of all catalog services across all locations of this business
+  const allCatalogServices = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; price: number }>();
+    locations.forEach(loc => {
+      (loc.services || []).forEach((s: any) => {
+        const idKey = s.id || s.name;
+        map.set(idKey, { id: idKey, name: s.name, price: s.price });
+      });
+    });
+    return Array.from(map.values());
+  }, [locations]);
+
   // Dynamic analytics calculations
   const dynamicStats = useMemo(() => {
     if (!activeLocation) return {
@@ -220,6 +232,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
   // Multi-location States
   const [selectedRedeemableLocationIds, setSelectedRedeemableLocationIds] = useState<string[]>([]);
+  const [selectedEligibleServiceIds, setSelectedEligibleServiceIds] = useState<string[]>([]);
+  const [selectedCheckoutServiceId, setSelectedCheckoutServiceId] = useState('');
   const [selectedPromoLocationIds, setSelectedPromoLocationIds] = useState<string[]>([]);
   const [previewLocCount, setPreviewLocCount] = useState<number | null>(null);
   const [showMobileValidateModal, setShowMobileValidateModal] = useState(false);
@@ -916,6 +930,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       setFirstTimeOnly(biz.firstTimeOnly ?? false);
       setBlockSelfReferral(biz.blockSelfReferral ?? false);
       setSelectedRedeemableLocationIds(biz.redeemableLocationIds ?? []);
+      setSelectedEligibleServiceIds(biz.eligibleServiceIds ?? []);
 
       const locs = await EasyRewardService.getLocations(biz.id);
       setLocations(locs);
@@ -1134,6 +1149,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       setValidationEmail('');
       setValidationIdentifier('');
       setValidationSpend('');
+      setSelectedCheckoutServiceId('');
       loadData();
     }
   };
@@ -1512,6 +1528,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
         referrerReward: referrerRewardValue,
         friendReward: friendRewardValue,
         redeemableLocationIds: selectedRedeemableLocationIds,
+        eligibleServiceIds: selectedEligibleServiceIds,
         verificationMethod,
         customIdentifierLabel,
         limitOnePerFriend,
@@ -1977,6 +1994,77 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                     })}
 
                     <form onSubmit={handleRedemptionLookup} className="space-y-4">
+                      {activeLocation?.services && activeLocation.services.length > 0 && (
+                        <div className="space-y-1.5 animate-fade-in">
+                          <label className="block text-xs text-txtsecondary font-bold">Catalog Product / Service</label>
+                          <select
+                            value={selectedCheckoutServiceId}
+                            onChange={(e) => {
+                              const svcId = e.target.value;
+                              setSelectedCheckoutServiceId(svcId);
+                              const selectedSvc = activeLocation.services.find((s: any) => s.id === svcId);
+                              if (selectedSvc) {
+                                const isEligible = business?.eligibleServiceIds?.includes(svcId);
+                                if (isEligible) {
+                                  const matches = business.friendReward.match(/(\d+)%/);
+                                  const pct = matches ? parseInt(matches[1], 10) : 0;
+                                  const discount = selectedSvc.price * (pct / 100);
+                                  setValidationSpend(String(selectedSvc.price - discount));
+                                } else {
+                                  setValidationSpend(String(selectedSvc.price));
+                                }
+                              } else {
+                                setValidationSpend('');
+                              }
+                            }}
+                            className="w-full px-3 py-2.5 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                          >
+                            <option value="">-- Choose Catalog Service (Optional) --</option>
+                            {activeLocation.services.map((s: any) => (
+                              <option key={s.id} value={s.id}>
+                                {s.name} (R{s.price})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {selectedCheckoutServiceId && (
+                        (() => {
+                          const isEligible = business?.eligibleServiceIds?.includes(selectedCheckoutServiceId);
+                          const selectedSvc = activeLocation?.services?.find((s: any) => s.id === selectedCheckoutServiceId);
+                          if (!selectedSvc) return null;
+                          const matches = business?.friendReward?.match(/(\d+)%/);
+                          const pct = matches ? parseInt(matches[1], 10) : 0;
+                          const discount = selectedSvc.price * (pct / 100);
+                          
+                          return isEligible ? (
+                            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs space-y-1 animate-fade-in font-bold font-sans">
+                              <p className="flex items-center gap-1.5 text-[#10b981]">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Discount applies to this catalog service!</span>
+                              </p>
+                              <div className="text-[10px] text-txtsecondary font-medium pl-6 space-y-0.5 mt-1 font-sans">
+                                <p>Standard Price: R{selectedSvc.price.toFixed(2)}</p>
+                                <p>Campaign Discount ({pct}%): -R{discount.toFixed(2)}</p>
+                                <p className="text-emerald-500 font-bold">Checkout Bill: R{(selectedSvc.price - discount).toFixed(2)}</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs space-y-1 animate-fade-in font-bold font-sans">
+                              <p className="flex items-center gap-1.5 text-rose-500">
+                                <AlertTriangle className="w-4 h-4" />
+                                <span>Discount does not apply to this catalog service.</span>
+                              </p>
+                              <div className="text-[10px] text-txtsecondary font-medium pl-6 space-y-0.5 mt-1 font-sans">
+                                <p>Standard Price: R{selectedSvc.price.toFixed(2)}</p>
+                                <p className="text-rose-500 font-bold">Checkout Bill: R{selectedSvc.price.toFixed(2)} (Full Price)</p>
+                              </div>
+                            </div>
+                          );
+                        })()
+                      )}
+
                       <div className="animate-fade-in space-y-2">
                         <label className="block text-xs text-txtsecondary font-bold">Checkout Bill Spend (Rands) *</label>
                         <div className="relative">
@@ -2006,6 +2094,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             setLookupResult(null);
                             setRedeemCode('');
                             setValidationSpend('');
+                            setSelectedCheckoutServiceId('');
                           }}
                           className="flex-1 py-3.5 rounded-xl font-bold bg-hover hover:bg-divider text-txtprimary border border-divider transition-all text-xs"
                         >
@@ -3461,6 +3550,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                           className="w-full px-4 py-3 rounded-xl border border-divider text-xs text-txtprimary focus:border-[#10b981] outline-none bg-hover font-medium"
                           required
                         />
+
+                        {/* Catalog-Specific Selection Checklist */}
+                        <div className="space-y-2.5 pt-1">
+                          <label className="block text-[11px] text-txtsecondary font-semibold uppercase">Eligible Catalog Services / Products</label>
+                          <p className="text-[10px] text-txtsecondary leading-normal">Check which of your services from the "My Store" catalog this discount applies to. Unchecked services will be charged at standard price during cashier validation.</p>
+                          <div className="p-3.5 rounded-xl border border-divider bg-hover/50 space-y-2 max-h-[160px] overflow-y-auto">
+                            {allCatalogServices.length > 0 ? (
+                              allCatalogServices.map(svc => {
+                                const isChecked = selectedEligibleServiceIds.includes(svc.id);
+                                return (
+                                  <label key={svc.id} className="flex items-center gap-2.5 cursor-pointer select-none">
+                                    <input 
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedEligibleServiceIds(prev => [...prev, svc.id]);
+                                        } else {
+                                          setSelectedEligibleServiceIds(prev => prev.filter(id => id !== svc.id));
+                                        }
+                                      }}
+                                      className="w-3.5 h-3.5 accent-emerald-500 rounded"
+                                    />
+                                    <div>
+                                      <p className="text-xs font-bold text-txtprimary">{svc.name}</p>
+                                      <p className="text-[10px] text-txtsecondary">Base Price: R{svc.price}</p>
+                                    </div>
+                                  </label>
+                                );
+                              })
+                            ) : (
+                              <p className="text-[10px] text-txtsecondary italic">No services registered in your catalog yet. Add them in the "My Store" tab first.</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <p className="text-[11px] text-txtsecondary italic pl-1">Referred friends won't receive a specific reward discount on signing up, but they can register to refer other friends and start earning.</p>
@@ -4977,6 +5101,77 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   />
                 </div>
 
+
+                {activeLocation?.services && activeLocation.services.length > 0 && (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs text-txtsecondary mb-1.5 font-bold font-sans">Catalog Product / Service</label>
+                    <select
+                      value={selectedCheckoutServiceId}
+                      onChange={(e) => {
+                        const svcId = e.target.value;
+                        setSelectedCheckoutServiceId(svcId);
+                        const selectedSvc = activeLocation.services.find((s: any) => s.id === svcId);
+                        if (selectedSvc) {
+                          const isEligible = business?.eligibleServiceIds?.includes(svcId);
+                          if (isEligible) {
+                            const matches = business.friendReward.match(/(\d+)%/);
+                            const pct = matches ? parseInt(matches[1], 10) : 0;
+                            const discount = selectedSvc.price * (pct / 100);
+                            setValidationSpend(String(selectedSvc.price - discount));
+                          } else {
+                            setValidationSpend(String(selectedSvc.price));
+                          }
+                        } else {
+                          setValidationSpend('');
+                        }
+                      }}
+                      className="w-full px-3 py-2.5 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-semibold"
+                    >
+                      <option value="">-- Choose Catalog Service (Optional) --</option>
+                      {activeLocation.services.map((s: any) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} (R{s.price})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {selectedCheckoutServiceId && (
+                  (() => {
+                    const isEligible = business?.eligibleServiceIds?.includes(selectedCheckoutServiceId);
+                    const selectedSvc = activeLocation?.services?.find((s: any) => s.id === selectedCheckoutServiceId);
+                    if (!selectedSvc) return null;
+                    const matches = business?.friendReward?.match(/(\d+)%/);
+                    const pct = matches ? parseInt(matches[1], 10) : 0;
+                    const discount = selectedSvc.price * (pct / 100);
+                    
+                    return isEligible ? (
+                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs space-y-1 animate-fade-in font-bold font-sans">
+                        <p className="flex items-center gap-1.5 text-[#10b981]">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Discount applies to this catalog service!</span>
+                        </p>
+                        <div className="text-[10px] text-txtsecondary font-medium pl-6 space-y-0.5 mt-1 font-sans">
+                          <p>Standard Price: R{selectedSvc.price.toFixed(2)}</p>
+                          <p>Campaign Discount ({pct}%): -R{discount.toFixed(2)}</p>
+                          <p className="text-emerald-500 font-bold">Checkout Bill: R{(selectedSvc.price - discount).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs space-y-1 animate-fade-in font-bold font-sans">
+                        <p className="flex items-center gap-1.5 text-rose-500">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>Discount does not apply to this catalog service.</span>
+                        </p>
+                        <div className="text-[10px] text-txtsecondary font-medium pl-6 space-y-0.5 mt-1 font-sans">
+                          <p>Standard Price: R{selectedSvc.price.toFixed(2)}</p>
+                          <p className="text-rose-500 font-bold">Checkout Bill: R{selectedSvc.price.toFixed(2)} (Full Price)</p>
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
 
                 {business.requirePurchase && (
                   <div>

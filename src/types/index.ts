@@ -23,6 +23,7 @@ export interface Business {
   limitOnePerDay: boolean;
   firstTimeOnly: boolean;
   blockSelfReferral: boolean;
+  eligibleServiceIds?: string[];
 }
 
 export interface Service {

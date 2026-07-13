@@ -49,7 +49,8 @@ export const EasyRewardService = {
         limitOnePerDay: b.limit_one_per_day,
         firstTimeOnly: b.first_time_only,
         blockSelfReferral: b.block_self_referral,
-        redeemableLocationIds: b.redeemable_location_ids || []
+        redeemableLocationIds: b.redeemable_location_ids || [],
+        eligibleServiceIds: b.eligible_service_ids || []
       };
     });
   },
@@ -74,6 +75,7 @@ export const EasyRewardService = {
     if (data.firstTimeOnly !== undefined) updateObj.first_time_only = data.firstTimeOnly;
     if (data.blockSelfReferral !== undefined) updateObj.block_self_referral = data.blockSelfReferral;
     if (data.redeemableLocationIds !== undefined) updateObj.redeemable_location_ids = data.redeemableLocationIds;
+    if (data.eligibleServiceIds !== undefined) updateObj.eligible_service_ids = data.eligibleServiceIds;
 
     if (Object.keys(updateObj).length > 0) {
       const { error } = await supabase
@@ -127,7 +129,8 @@ export const EasyRewardService = {
       limitOnePerDay: updatedBiz.limit_one_per_day,
       firstTimeOnly: updatedBiz.first_time_only,
       blockSelfReferral: updatedBiz.block_self_referral,
-      redeemableLocationIds: updatedBiz.redeemable_location_ids || []
+      redeemableLocationIds: updatedBiz.redeemable_location_ids || [],
+      eligibleServiceIds: updatedBiz.eligible_service_ids || []
     };
   },
 
