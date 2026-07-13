@@ -5,7 +5,7 @@ import { Business, Location, Customer, Referral, Promotion, Review, TollaUser, C
 import { ReferralTree } from '../components/ReferralTree';
 import { Logo } from '../components/Logo';
 import { 
-  LayoutGrid, Map, Users, Share2, BarChart3, Flame, Star, 
+  LayoutGrid, Users, Share2, BarChart3, Flame, Star, 
   Network, Settings, CreditCard, LogOut, ArrowRight, Check, X,
   AlertTriangle, Copy, Trash2, Edit2, Plus, ExternalLink, Calendar,
   Activity, CheckCircle2, Clock, ShieldCheck, Mail, Download, TrendingUp,
