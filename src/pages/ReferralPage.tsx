@@ -297,8 +297,11 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
   };
 
   // Helper to calculate promotional discounts dynamically
-  const calculateDiscount = (price: number, promo: Promotion) => {
-    const pctMatch = promo.title.match(/(\d+)\s*%/);
+  const calculateDiscount = (price: number, rewardStringOrPromo: string | Promotion) => {
+    const titleText = typeof rewardStringOrPromo === 'string' ? rewardStringOrPromo : rewardStringOrPromo.title;
+    const descText = typeof rewardStringOrPromo === 'string' ? '' : rewardStringOrPromo.description;
+
+    const pctMatch = titleText.match(/(\d+)\s*%/);
     if (pctMatch) {
       const pct = parseFloat(pctMatch[1]);
       const discount = (price * pct) / 100;
@@ -308,7 +311,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
         text: `${pct}% Off`
       };
     }
-    const randMatch = promo.title.match(/R\s*(\d+)/i) || promo.description.match(/R\s*(\d+)/i);
+    const randMatch = titleText.match(/R\s*(\d+)/i) || descText.match(/R\s*(\d+)/i);
     if (randMatch) {
       const amt = parseFloat(randMatch[1]);
       return {
@@ -918,8 +921,11 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
               <div className="grid sm:grid-cols-1 gap-3">
                 {location.services.map(svc => {
                   const isEligible = !business.eligibleServiceIds || business.eligibleServiceIds.length === 0 || business.eligibleServiceIds.includes(svc.id);
-                  const isLinkedToPromo = isEligible && promotion && svc.applicablePromoIds.includes(promotion.id);
-                  const calc = isEligible && promotion ? calculateDiscount(svc.price, promotion) : null;
+                  const activeDiscountSource = view === 'friend' && business.friendReward && business.friendReward !== 'none' && business.friendReward !== 'No special reward'
+                    ? business.friendReward
+                    : (promotion && svc.applicablePromoIds?.includes(promotion.id) ? promotion : null);
+                  const isLinkedToPromo = isEligible && !!activeDiscountSource;
+                  const calc = isEligible && activeDiscountSource ? calculateDiscount(svc.price, activeDiscountSource) : null;
 
                   return (
                     <div key={svc.id} className="p-4 rounded-xl bg-slate-950/40 border border-slate-850/50 flex items-center justify-between gap-4">
