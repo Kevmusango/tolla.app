@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../services/supabase';
 import { EasyRewardService } from '../services/EasyRewardService';
 import { INDUSTRY_CATEGORIES } from './Onboard';
 import { Business, Location, Customer, Referral, Promotion, Review, TollaUser, CustomerBusiness, Wallet, TimelineEvent } from '../types';
