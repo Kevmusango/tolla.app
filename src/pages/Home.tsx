@@ -266,7 +266,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 /* VIDEO PLAYING STATE */
                 <div className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-slate-950 border border-divider relative overflow-hidden flex items-center justify-center shadow-2xl">
                   <video 
-                    src="https://res.cloudinary.com/dnnwvmh3n/video/upload/v1784018517/ec9fe433-4975-44c1-8850-7130e13de241_eytncq.mp4" 
+                    src="https://res.cloudinary.com/dnnwvmh3n/video/upload/v1784020287/Your_paragraph_text_3_ysfsjo.mp4" 
                     controls
                     autoPlay
                     className="w-full h-full object-contain"
