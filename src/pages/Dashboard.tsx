@@ -2034,6 +2034,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
             
+            {/* Free Plan Progress Banner */}
+            {business.subscriptionPlan === 'free' && (
+              <div className="p-4 rounded-2xl bg-panel border border-divider flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-accent-primary/10 text-accent-primary font-bold text-sm shrink-0">
+                    📊
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-txtprimary">Free Plan Usage Limit</h4>
+                    <p className="text-[11px] text-txtsecondary mt-0.5">
+                      You have used <strong>{analytics.customersRegistered}</strong> of your <strong>5</strong> free monthly customer registrations.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  {/* Visual Progress Bar */}
+                  <div className="h-2 w-32 bg-hover rounded-full overflow-hidden shrink-0 hidden sm:block">
+                    <div 
+                      className="h-full bg-accent-primary rounded-full transition-all"
+                      style={{ width: `${Math.min(100, (analytics.customersRegistered / 5) * 100)}%` }}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('billing')}
+                    className="w-full sm:w-auto px-4 py-2 bg-accent-primary hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-brand-500/10 text-center"
+                  >
+                    Upgrade Plan
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Upgrade Banner for Free Accounts hitting limit */}
             {business.subscriptionPlan === 'free' && analytics.customersRegistered >= 5 && (
               <div className="p-6 rounded-2xl bg-accent-amber/10 border border-accent-amber/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
@@ -5277,6 +5309,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">Customer signup scan</p>
                 </div>
               </button>
+
+              {/* Action 5: Subscription & Billing */}
+              {authUser.role === 'owner' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileQuickActions(false);
+                    setActiveTab('billing');
+                  }}
+                  className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 hover:bg-slate-800 text-left flex flex-col justify-between space-y-3 group transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-black">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">Billing & Plan</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">Upgrade or update plan</p>
+                  </div>
+                </button>
+              )}
 
             </div>
           </div>
