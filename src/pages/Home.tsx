@@ -251,11 +251,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* SECTION 2: DETAILS & FOOTER */}
-      <section className="h-screen snap-start bg-canvas flex flex-col justify-between shrink-0 border-t border-divider">
+      {/* SECTION 2: DETAILS (Scroll stop) */}
+      <section className="h-screen snap-start bg-canvas flex flex-col justify-center shrink-0 border-t border-divider">
         
         {/* Features marquee container */}
-        <div className="flex-1 max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-6">
+        <div className="max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-6">
           <div className="text-center max-w-2xl mx-auto mb-8">
             <h2 className="text-2xl md:text-3xl font-extrabold font-sans mb-2 text-txtprimary">Designed for Repeat-Customer Storefronts</h2>
             <p className="text-txtsecondary text-xs leading-relaxed">
@@ -300,6 +300,105 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   <p className="text-xs text-txtsecondary leading-relaxed font-sans">{ind.desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: PRICING & FOOTER (Scroll stop) */}
+      <section className="h-screen snap-start bg-canvas flex flex-col justify-between shrink-0 border-t border-divider">
+        <div className="flex-1 max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-6">
+          <div className="text-center max-w-2xl mx-auto mb-6">
+            <h2 className="text-2xl md:text-3xl font-extrabold font-sans mb-1.5 text-txtprimary">Simple, Transparent Pricing</h2>
+            <p className="text-txtsecondary text-xs leading-relaxed">
+              Start for free with basic referral features, or scale with unlimited premium features.
+            </p>
+          </div>
+
+          {/* Pricing Grid */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full items-stretch">
+            {/* Free Plan Card */}
+            <div className="glass-panel p-6 rounded-2xl border border-divider flex flex-col justify-between space-y-6 bg-panel/30">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-lg font-black text-txtprimary">Free Plan</h4>
+                  <p className="text-xs text-txtsecondary mt-1">Perfect for trying out Tolla with your regulars.</p>
+                </div>
+                <div>
+                  <span className="text-3xl font-black text-txtprimary">R0</span>
+                  <span className="text-xs text-txtsecondary font-semibold"> / month</span>
+                </div>
+                <hr className="border-divider" />
+                <ul className="space-y-2.5 text-xs text-txtsecondary text-left">
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Up to 5 new customer signups a month
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Share up to 2 active promotions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Show up to 2 customer reviews
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Block people from referring themselves
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Printable counter QR code
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => onNavigate('onboard')}
+                className="w-full py-3 rounded-xl bg-hover border border-divider text-xs text-txtprimary font-extrabold hover:bg-divider transition-all text-center cursor-pointer"
+              >
+                Sign Up Free
+              </button>
+            </div>
+
+            {/* Premium Plan Card */}
+            <div className="glass-panel p-6 rounded-2xl border border-[#10b981]/40 bg-[#10b981]/5 shadow-emerald-500/5 shadow-2xl flex flex-col justify-between space-y-6 relative">
+              <span className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-[#10b981] text-white text-[9px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20">
+                Most Popular
+              </span>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-lg font-black text-txtprimary">Premium Plan</h4>
+                  <p className="text-xs text-txtsecondary mt-1">Best for active storefronts looking to scale customer sharing.</p>
+                </div>
+                <div className="space-y-1">
+                  <div>
+                    <span className="text-3xl font-black text-txtprimary">R399</span>
+                    <span className="text-xs text-txtsecondary font-semibold"> / month per location</span>
+                  </div>
+                  <div className="text-[10px] text-[#10b981] font-extrabold flex items-center gap-1">
+                    <span>🔥</span> R249 / month from 3 locations onwards!
+                  </div>
+                </div>
+                <hr className="border-divider" />
+                <ul className="space-y-2.5 text-xs text-txtsecondary text-left">
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> customer signups
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> specials & promotions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> active reviews
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Add multiple locations with cross-metrics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-[#10b981] font-bold">✓</span> Multi-location cashier access links
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => onNavigate('onboard')}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#10b981] to-[#06b6d4] text-slate-950 font-black text-xs shadow-md hover:opacity-90 transition-all text-center cursor-pointer"
+              >
+                Go Premium Now
+              </button>
             </div>
           </div>
         </div>
