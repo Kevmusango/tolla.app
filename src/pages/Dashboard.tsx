@@ -277,12 +277,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [configLocCustomVal, setConfigLocCustomVal] = useState('');
   const [configLocCustomType, setConfigLocCustomType] = useState('Service');
 
+  const [hasCompletedSetup, setHasCompletedSetup] = useState(() => {
+    return localStorage.getItem(`tolla_onboarded_${authUser.id}`) === 'true';
+  });
+
   // Onboarding check for new merchant accounts
   const isNewMerchantAccount = useMemo(() => {
+    if (hasCompletedSetup) return false;
     return authUser.role === 'owner' && 
            locations.length === 1 && 
            locations[0].address === 'Default Store Address, South Africa';
-  }, [locations, authUser.role]);
+  }, [locations, authUser.role, hasCompletedSetup]);
 
   // Ref for Google Maps Autocomplete address binding
   const addressInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -770,6 +775,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
         });
         showToast('Location updated successfully!', 'success');
         setConfigureLocId(null);
+        setHasCompletedSetup(true);
+        localStorage.setItem(`tolla_onboarded_${authUser.id}`, 'true');
       }
       loadData();
     } catch (err) {

@@ -58,6 +58,23 @@ export default function App() {
       }
       lastUserIdRef.current = currentUserId;
 
+      const checkFallback = () => {
+        try {
+          const cachedUser = localStorage.getItem('tolla_auth_user');
+          if (cachedUser) {
+            const parsed = JSON.parse(cachedUser);
+            if (parsed && parsed.id === session?.user?.id) {
+              setAuthUser(parsed);
+              setIsAuthLoading(false);
+              return true;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse cached user:', e);
+        }
+        return false;
+      };
+
       if (session?.user) {
         setIsAuthLoading(true);
         setAuthLoadingMessage('Resolving partner profile...');
@@ -81,6 +98,7 @@ export default function App() {
 
           if (!profileVerified) {
             console.error('Trigger profile creation failed on auth signup.');
+            if (checkFallback()) return;
             setAuthUser(null);
             setIsAuthLoading(false);
             return;
@@ -94,6 +112,7 @@ export default function App() {
             .maybeSingle();
 
           if (!association) {
+            if (checkFallback()) return;
             setAuthUser(null);
             setIsAuthLoading(false);
             setRoute('onboard');
@@ -108,12 +127,14 @@ export default function App() {
           });
         } catch (err) {
           console.error('Failed to resolve account authorizations:', err);
+          if (checkFallback()) return;
           setAuthUser(null);
         } finally {
           setIsAuthLoading(false);
         }
       } else {
-        setAuthUser((prev) => (prev?.role === 'manager' ? prev : null));
+        // If we have a cached user (owner or manager), preserve it so they stay logged in like WhatsApp!
+        setAuthUser((prev) => prev);
         setIsAuthLoading(false);
       }
     });
