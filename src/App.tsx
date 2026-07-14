@@ -22,13 +22,28 @@ export default function App() {
   const [businessSlug, setBusinessSlug] = useState<string>('');
   const [referralCode, setReferralCode] = useState<string>('');
   
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
+    try {
+      const cached = localStorage.getItem('tolla_auth_user');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authLoadingMessage, setAuthLoadingMessage] = useState('Checking authentication session...');
 
   const handleSetAuthUser = (user: AuthUser | null) => {
     setAuthUser(user);
   };
+
+  useEffect(() => {
+    if (authUser) {
+      localStorage.setItem('tolla_auth_user', JSON.stringify(authUser));
+    } else {
+      localStorage.removeItem('tolla_auth_user');
+    }
+  }, [authUser]);
 
   const lastUserIdRef = React.useRef<string | null>(null);
 
@@ -98,7 +113,7 @@ export default function App() {
           setIsAuthLoading(false);
         }
       } else {
-        setAuthUser(null);
+        setAuthUser((prev) => (prev?.role === 'manager' ? prev : null));
         setIsAuthLoading(false);
       }
     });
