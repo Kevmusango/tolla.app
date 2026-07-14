@@ -298,104 +298,101 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     <h3 className="text-sm font-bold font-sans text-txtprimary">{ind.name}</h3>
                   </div>
                   <p className="text-xs text-txtsecondary leading-relaxed font-sans">{ind.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: PRICING & FOOTER (Scroll stop) */}
-      <section className="h-screen snap-start bg-canvas flex flex-col justify-between shrink-0 border-t border-divider">
-        <div className="flex-1 max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-6">
-          <div className="text-center max-w-2xl mx-auto mb-6">
-            <h2 className="text-2xl md:text-3xl font-extrabold font-sans mb-1.5 text-txtprimary">Simple, Transparent Pricing</h2>
-            <p className="text-txtsecondary text-xs leading-relaxed">
+          {/* SECTION 3: PRICING & FOOTER (Scroll stop) */}
+      <section className="h-screen snap-start bg-canvas flex flex-col justify-between shrink-0 border-t border-divider overflow-hidden">
+        <div className="flex-grow max-w-5xl mx-auto px-6 w-full flex flex-col justify-center py-4">
+          <div className="text-center max-w-2xl mx-auto mb-4">
+            <h2 className="text-xl md:text-2xl font-extrabold font-sans mb-1 text-txtprimary">Simple, Transparent Pricing</h2>
+            <p className="text-txtsecondary text-[11px] leading-tight">
               Start for free with basic referral features, or scale with unlimited premium features.
             </p>
           </div>
 
           {/* Pricing Grid */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full items-stretch">
+          <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto w-full items-stretch">
             {/* Free Plan Card */}
-            <div className="glass-panel p-6 rounded-2xl border border-divider flex flex-col justify-between space-y-6 bg-panel/30">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-black text-txtprimary">Free Plan</h4>
-                  <p className="text-xs text-txtsecondary mt-1">Perfect for trying out Tolla with your regulars.</p>
-                </div>
-                <div>
-                  <span className="text-3xl font-black text-txtprimary">R0</span>
-                  <span className="text-xs text-txtsecondary font-semibold"> / month</span>
+            <div className="glass-panel p-4.5 rounded-2xl border border-divider flex flex-col justify-between space-y-4 bg-panel/30">
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="text-sm font-black text-txtprimary uppercase tracking-wide">Free Plan</h4>
+                    <p className="text-[10px] text-txtsecondary mt-0.5">Perfect for starting with your regulars.</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-txtprimary">R0</span>
+                    <span className="text-[10px] text-txtsecondary font-semibold"> / mo</span>
+                  </div>
                 </div>
                 <hr className="border-divider" />
-                <ul className="space-y-2.5 text-xs text-txtsecondary text-left">
-                  <li className="flex items-center gap-2">
+                <ul className="space-y-1.5 text-[11px] text-txtsecondary text-left">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Up to 5 new customer signups a month
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Share up to 2 active promotions
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Show up to 2 customer reviews
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Block people from referring themselves
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Printable counter QR code
                   </li>
                 </ul>
               </div>
               <button 
                 onClick={() => onNavigate('onboard')}
-                className="w-full py-3 rounded-xl bg-hover border border-divider text-xs text-txtprimary font-extrabold hover:bg-divider transition-all text-center cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-hover border border-divider text-[11px] text-txtprimary font-extrabold hover:bg-divider transition-all text-center cursor-pointer"
               >
                 Sign Up Free
               </button>
             </div>
 
             {/* Premium Plan Card */}
-            <div className="glass-panel p-6 rounded-2xl border border-[#10b981]/40 bg-[#10b981]/5 shadow-emerald-500/5 shadow-2xl flex flex-col justify-between space-y-6 relative">
-              <span className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-[#10b981] text-white text-[9px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20">
+            <div className="glass-panel p-4.5 rounded-2xl border border-[#10b981]/40 bg-[#10b981]/5 shadow-emerald-500/5 shadow-2xl flex flex-col justify-between space-y-4 relative">
+              <span className="absolute -top-2.5 right-6 px-2.5 py-0.5 rounded-full bg-[#10b981] text-white text-[8px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20">
                 Most Popular
               </span>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-black text-txtprimary">Premium Plan</h4>
-                  <p className="text-xs text-txtsecondary mt-1">Best for active storefronts looking to scale customer sharing.</p>
-                </div>
-                <div className="space-y-1">
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-3xl font-black text-txtprimary">R399</span>
-                    <span className="text-xs text-txtsecondary font-semibold"> / month per location</span>
+                    <h4 className="text-sm font-black text-txtprimary uppercase tracking-wide">Premium Plan</h4>
+                    <p className="text-[10px] text-txtsecondary mt-0.5">Best for active storefronts looking to scale.</p>
                   </div>
-                  <div className="text-[10px] text-[#10b981] font-extrabold flex items-center gap-1">
-                    <span>🔥</span> R249 / month from 3 locations onwards!
+                  <div className="text-right">
+                    <div>
+                      <span className="text-2xl font-black text-txtprimary">R289</span>
+                      <span className="text-[10px] text-txtsecondary font-semibold"> / mo per branch</span>
+                    </div>
+                    <div className="text-[9px] text-[#10b981] font-extrabold mt-0.5">
+                      🔥 R249/mo from 3+ locations
+                    </div>
                   </div>
                 </div>
                 <hr className="border-divider" />
-                <ul className="space-y-2.5 text-xs text-txtsecondary text-left">
-                  <li className="flex items-center gap-2">
+                <ul className="space-y-1.5 text-[11px] text-txtsecondary text-left">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> customer signups
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> specials & promotions
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> active deals & promos
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> <strong>Unlimited</strong> active reviews
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-[#10b981] font-bold">✓</span> Add multiple locations with cross-metrics
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-[#10b981] font-bold">✓</span> Add multiple locations with analytics
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-[#10b981] font-bold">✓</span> Multi-location cashier access links
                   </li>
                 </ul>
               </div>
               <button 
                 onClick={() => onNavigate('onboard')}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#10b981] to-[#06b6d4] text-slate-950 font-black text-xs shadow-md hover:opacity-90 transition-all text-center cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#10b981] to-[#06b6d4] text-slate-950 font-black text-[11px] shadow-md hover:opacity-90 transition-all text-center cursor-pointer"
               >
                 Go Premium Now
               </button>
@@ -404,14 +401,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
 
         {/* Footer */}
-        <footer className="border-t border-divider bg-panel py-8 shrink-0">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Logo className="w-5 h-5" />
+        <footer className="border-t border-divider bg-panel py-4 shrink-0">
+          <div className="max-w-5xl mx-auto px-6 w-full flex justify-between items-center text-[10px] text-txtsecondary">
+            <div className="flex items-center gap-1.5">
+              <Logo className="w-4.5 h-4.5" />
               <span className="font-bold text-txtprimary text-sm">EasyReward</span>
             </div>
-            <p className="text-[10px] text-txtsecondary">
-              &copy; 2026 EasyReward. All rights reserved. Designed for local retail & beauty industries.
+            <p>
+              &copy; 2026 EasyReward. All rights reserved. Designed for local storefronts.
             </p>
           </div>
         </footer>
