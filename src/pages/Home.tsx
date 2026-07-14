@@ -298,7 +298,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     <h3 className="text-sm font-bold font-sans text-txtprimary">{ind.name}</h3>
                   </div>
                   <p className="text-xs text-txtsecondary leading-relaxed font-sans">{ind.desc}</p>
-          {/* SECTION 3: PRICING & FOOTER (Scroll stop) */}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: PRICING & FOOTER (Scroll stop) */}
       <section className="h-screen snap-start bg-canvas flex flex-col justify-between shrink-0 border-t border-divider overflow-hidden">
         <div className="flex-grow max-w-5xl mx-auto px-6 w-full flex flex-col justify-center py-4">
           <div className="text-center max-w-2xl mx-auto mb-4">
