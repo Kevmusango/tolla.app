@@ -1419,6 +1419,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     loadData();
   };
 
+  // Handle Delete Promotion
+  const handleDeletePromotion = async (promoId: string) => {
+    if (!window.confirm("Are you sure you want to delete this special deal? This action cannot be undone.")) return;
+    try {
+      if (activeLocation && activeLocation.currentPromotionId === promoId) {
+        await EasyRewardService.updateLocation(activeLocation.id, {
+          currentPromotionId: null
+        });
+      }
+      await EasyRewardService.deletePromotion(promoId);
+      showToast('Special deal deleted successfully!', 'success');
+      loadData();
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete special deal.', 'error');
+    }
+  };
+
   // Helper to calculate promotional discounts dynamically
   const calculateDiscount = (price: number, promo: Promotion) => {
     // Look for percentage e.g. "20%"
@@ -1719,8 +1737,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   // Require business & location before rendering (analytics initializes with defaults, never null)
   if (!business || !activeLocation) {
     return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center p-6">
-        <div className="w-8 h-8 border-4 border-accent-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-canvas text-txtprimary flex flex-col md:flex-row transition-colors duration-200">
+        {/* Sidebar Skeleton */}
+        <aside className="hidden md:block w-64 bg-panel border-r border-divider h-screen p-6 space-y-6">
+          <div className="flex items-center gap-3 animate-pulse">
+            <div className="w-6 h-6 rounded-lg bg-hover" />
+            <div className="w-24 h-4 rounded-lg bg-hover" />
+          </div>
+          <div className="space-y-4 pt-10">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-3 animate-pulse">
+                <div className="w-5 h-5 rounded bg-hover" />
+                <div className="w-32 h-3.5 rounded bg-hover" />
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Main Panel Skeleton */}
+        <main className="flex-grow p-6 md:p-10 space-y-8">
+          {/* Header Skeleton */}
+          <div className="flex justify-between items-center pb-4 border-b border-divider animate-pulse">
+            <div className="space-y-2">
+              <div className="w-48 h-6 rounded-lg bg-hover" />
+              <div className="w-32 h-3.5 rounded-lg bg-hover" />
+            </div>
+            <div className="w-36 h-10 rounded-xl bg-hover" />
+          </div>
+
+          {/* Grid Cards Skeleton */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="glass-panel p-6 rounded-2xl border border-divider space-y-3 animate-pulse">
+                <div className="w-8 h-8 rounded-lg bg-hover" />
+                <div className="w-16 h-3 rounded bg-hover" />
+                <div className="w-24 h-6 rounded bg-hover" />
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Columns Skeleton */}
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="glass-panel p-8 rounded-2xl border border-divider space-y-4 animate-pulse">
+              <div className="w-36 h-5 rounded bg-hover" />
+              <div className="w-full h-4 rounded bg-hover" />
+              <div className="w-full h-12 rounded-xl bg-hover" />
+              <div className="w-full h-14 rounded-xl bg-hover" />
+            </div>
+            <div className="glass-panel p-8 rounded-2xl border border-divider space-y-4 animate-pulse">
+              <div className="w-36 h-5 rounded bg-hover" />
+              <div className="w-full h-44 rounded-xl bg-hover" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -3081,21 +3150,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                             Created: {new Date(promo.createdAt).toLocaleDateString()}
                           </span>
                           
-                          {isActive ? (
-                            <button 
-                              onClick={() => handleSetPromoForLocation(undefined)}
-                              className="px-4 py-2.5 rounded-xl bg-[#10b981] text-white text-xs font-bold transition-all uppercase tracking-wider"
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePromotion(promo.id)}
+                              className="p-2.5 rounded-xl border border-divider hover:border-rose-500/35 hover:bg-rose-500/10 text-txtsecondary hover:text-rose-500 transition-all cursor-pointer"
+                              title="Delete Special Deal"
                             >
-                              Active Now
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                          ) : (
-                            <button 
-                              onClick={() => handleSetPromoForLocation(promo.id)}
-                              className="px-4 py-2.5 rounded-xl bg-hover border-2 border-divider text-txtprimary hover:bg-divider text-xs font-bold transition-all"
-                            >
-                              Show on Page
-                            </button>
-                          )}
+                            {isActive ? (
+                              <button 
+                                onClick={() => handleSetPromoForLocation(undefined)}
+                                className="px-4 py-2.5 rounded-xl bg-[#10b981] text-white text-xs font-bold transition-all uppercase tracking-wider"
+                              >
+                                Active Now
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => handleSetPromoForLocation(promo.id)}
+                                className="px-4 py-2.5 rounded-xl bg-hover border-2 border-divider text-txtprimary hover:bg-divider text-xs font-bold transition-all"
+                              >
+                                Show on Page
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

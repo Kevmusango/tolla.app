@@ -30,10 +30,18 @@ export default function App() {
     setAuthUser(user);
   };
 
+  const lastUserIdRef = React.useRef<string | null>(null);
+
   // Verify Supabase session and fetch permissions on mount
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`[Supabase Auth event]: ${event}`);
+
+      const currentUserId = session?.user?.id || null;
+      if (currentUserId === lastUserIdRef.current) {
+        return;
+      }
+      lastUserIdRef.current = currentUserId;
 
       if (session?.user) {
         setIsAuthLoading(true);
