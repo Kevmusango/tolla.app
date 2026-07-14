@@ -232,53 +232,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               {/* Visual glow backdrop */}
               <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/5 to-emerald-500/10 -z-10 group-hover:opacity-100 transition-opacity" />
 
-              {!isPlayingDemo ? (
-                
-                /* VIDEO THUMBNAIL STATE */
-                <div 
-                  className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-cover bg-center relative flex flex-col justify-between p-5 cursor-pointer overflow-hidden border border-divider shadow-lg"
-                  style={{ backgroundImage: `url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80')` }}
-                  onClick={() => setIsPlayingDemo(true)}
-                >
-                  {/* Soft backdrop overlay */}
-                  <div className="absolute inset-0 bg-slate-950/50 group-hover:bg-slate-950/40 transition-colors" />
-
-                  {/* Floating tags */}
-                  <div className="z-10 self-start glass-card px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-semibold text-white bg-slate-950/30">
-                    ⚡ Watch How It Works (2 Mins)
-                  </div>
-
-                  {/* Pulsing Play Button */}
-                  <div className="z-10 self-center flex items-center justify-center w-12 h-12 rounded-full bg-[#10b981] text-white hover:bg-[#0e9f6e] transition-all transform hover:scale-110 active:scale-95 shadow-lg shadow-emerald-500/30">
-                    <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-
-                  {/* Bottom title info */}
-                  <div className="z-10 text-left">
-                    <h3 className="font-bold text-white text-sm drop-shadow-sm">The Customer Referral Loop</h3>
-                    <p className="text-[10px] text-zinc-200 mt-0.5 font-medium drop-shadow-sm">Interactive Step-by-Step Vision Simulator</p>
-                  </div>
-                </div>
-
-              ) : (
-                /* VIDEO PLAYING STATE */
-                <div className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-slate-950 border border-divider relative overflow-hidden flex items-center justify-center shadow-2xl">
-                  <video 
-                    src="https://res.cloudinary.com/dnnwvmh3n/video/upload/v1784020287/Your_paragraph_text_3_ysfsjo.mp4" 
-                    controls
-                    autoPlay
-                    className="w-full h-full object-contain"
-                  />
-                  <button 
-                    onClick={() => setIsPlayingDemo(false)}
-                    className="absolute top-3 right-3 text-[10px] text-white/80 hover:text-white px-2 py-1 rounded bg-black/60 hover:bg-black/80 transition-all font-sans font-bold z-10 cursor-pointer shadow-lg"
-                  >
-                    Close Video
-                  </button>
-                </div>
-              )}
+              <div className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-slate-950 border border-divider relative overflow-hidden flex items-center justify-center shadow-2xl">
+                <video 
+                  src="https://res.cloudinary.com/dnnwvmh3n/video/upload/v1784020287/Your_paragraph_text_3_ysfsjo.mp4" 
+                  controls
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                />
+              </div>
 
             </div>
           </div>
