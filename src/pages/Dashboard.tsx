@@ -1057,43 +1057,112 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   // Handle Preview Lookup
   const handlePreviewLookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!redeemCode || !activeLocation) return;
+    if (!redeemCode || !activeLocation || !business) return;
     setRedemptionError('');
     setLookupResult(null);
     setLookupLoading(true);
 
     try {
       const codeClean = redeemCode.trim();
+      const codeCleanUpper = codeClean.toUpperCase();
       
-      // 1. Try by exact Referral Code / Tolla User ID first
+      // 1. Try to find a pending referral (referee/friend discount) by discount code first
+      const { data: refByCode } = await supabase
+        .from('referrals')
+        .select('*, customer_businesses(*, tolla_users(*))')
+        .eq('discount_code', codeCleanUpper)
+        .eq('status', 'pending')
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      let referral = refByCode;
+
+      // 2. If not found by code, try to find a pending referral by phone number
+      if (!referral) {
+        const cleanPhone = codeClean.replace(/\D/g, '');
+        const phoneConditions = [];
+        if (codeClean) phoneConditions.push(`referee_phone.eq.${codeClean}`);
+        if (cleanPhone) phoneConditions.push(`referee_phone.eq.${cleanPhone}`);
+        
+        if (phoneConditions.length > 0) {
+          const { data: refByPhone } = await supabase
+            .from('referrals')
+            .select('*, customer_businesses(*, tolla_users(*))')
+            .or(phoneConditions.join(','))
+            .eq('status', 'pending')
+            .is('deleted_at', null)
+            .maybeSingle();
+            
+          if (refByPhone) {
+            referral = refByPhone;
+          }
+        }
+      }
+
+      if (referral) {
+        // If a pending referral is found, construct a virtual lookup result for the referee
+        const uProfile = {
+          id: referral.id,
+          name: 'Anonymous Friend',
+          phoneNumber: referral.referee_phone || undefined,
+          emailAddress: referral.referee_email || undefined,
+          referralCode: referral.discount_code
+        };
+
+        setLookupResult({
+          customer: referral.customer_businesses, // The advocate who referred them
+          user: uProfile,
+          wallets: [],
+          vouchers: [
+            {
+              id: referral.id,
+              customerBusinessId: referral.customer_business_id,
+              refereePhone: referral.referee_phone || undefined,
+              refereeEmail: referral.referee_email || undefined,
+              discountCode: referral.discount_code,
+              locationId: referral.location_id,
+              status: referral.status,
+              createdAt: referral.created_at
+            }
+          ]
+        });
+        setLookupLoading(false);
+        return;
+      }
+
+      // 3. Fallback: Search for a registered customer/advocate (by referral code or phone number)
       let cust = await EasyRewardService.getCustomerByReferralCode(codeClean);
       
-      // 2. If not found, try lookup by phone number
       if (!cust) {
         const cleanPhone = codeClean.replace(/\D/g, '');
-        const { data: matchedUser } = await supabase
-          .from('tolla_users')
-          .select('*')
-          .or(`phone_number.eq.${codeClean},phone_number.eq.${cleanPhone},phone_number.eq.+${cleanPhone}`);
-          
-        if (matchedUser && matchedUser.length > 0) {
-          // Find customer mapping for this business
-          const { data: cb } = await supabase
-            .from('customer_businesses')
+        const phoneConditions = [];
+        if (codeClean) phoneConditions.push(`phone_number.eq.${codeClean}`);
+        if (cleanPhone) phoneConditions.push(`phone_number.eq.${cleanPhone}`);
+        
+        if (phoneConditions.length > 0) {
+          const { data: matchedUser } = await supabase
+            .from('tolla_users')
             .select('*')
-            .eq('tolla_user_id', matchedUser[0].id)
-            .eq('business_id', business.id)
-            .maybeSingle();
-          if (cb) {
-            cust = {
-              id: cb.id,
-              tollaUserId: cb.tolla_user_id,
-              businessId: cb.business_id,
-              locationId: cb.location_id,
-              customIdentifier: cb.custom_identifier,
-              referralScore: cb.referral_score,
-              createdAt: cb.created_at
-            };
+            .or(phoneConditions.join(','));
+            
+          if (matchedUser && matchedUser.length > 0) {
+            const { data: cb } = await supabase
+              .from('customer_businesses')
+              .select('*')
+              .eq('tolla_user_id', matchedUser[0].id)
+              .eq('business_id', business.id)
+              .maybeSingle();
+            if (cb) {
+              cust = {
+                id: cb.id,
+                tollaUserId: cb.tolla_user_id,
+                businessId: cb.business_id,
+                locationId: cb.location_id,
+                customIdentifier: cb.custom_identifier,
+                referralScore: cb.referral_score,
+                createdAt: cb.created_at
+              };
+            }
           }
         }
       }
