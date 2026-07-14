@@ -39,6 +39,15 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
+const PRESET_BANNERS = [
+  { name: 'Car Wash', url: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1200&h=400&fit=crop&q=80' },
+  { name: 'Car Detailing', url: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=1200&h=400&fit=crop&q=80' },
+  { name: 'Hair Salon', url: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&h=400&fit=crop&q=80' },
+  { name: 'Coffee Shop', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&h=400&fit=crop&q=80' },
+  { name: 'Retail Store', url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=400&fit=crop&q=80' },
+  { name: 'Restaurant', url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=400&fit=crop&q=80' }
+];
+
 export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -4758,6 +4767,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                         <p className="text-[9px] text-txtsecondary mt-0.5 font-medium">PNG, JPG, WEBP, SVG up to 5MB. Shows as the hero background on referral landing pages.</p>
                       </div>
                     )}
+
+                    {/* Custom URL and presets picker */}
+                    <div className="mt-3.5 space-y-3">
+                      <div className="space-y-1">
+                        <label className="block text-[9px] text-txtsecondary font-semibold uppercase">Or paste a direct image URL</label>
+                        <input 
+                          type="text"
+                          value={configLocBannerUrl}
+                          onChange={(e) => setConfigLocBannerUrl(e.target.value)}
+                          placeholder="e.g. https://images.unsplash.com/photo-..."
+                          className="w-full px-3 py-2 rounded-xl border border-divider text-xs text-txtprimary bg-hover focus:border-[#10b981] outline-none font-sans"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="block text-[9px] text-txtsecondary font-semibold uppercase">Or choose from premium presets</label>
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                          {PRESET_BANNERS.map((preset) => (
+                            <button
+                              key={preset.name}
+                              type="button"
+                              onClick={() => setConfigLocBannerUrl(preset.url)}
+                              className={`relative px-3 py-1.5 rounded-lg border text-[10px] font-bold shrink-0 transition-all font-sans cursor-pointer ${
+                                configLocBannerUrl === preset.url
+                                  ? 'border-[#10b981] text-[#10b981] bg-[#10b981]/5'
+                                  : 'border-divider text-txtsecondary bg-hover hover:text-txtprimary hover:border-divider-strong'
+                              }`}
+                            >
+                              {preset.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
