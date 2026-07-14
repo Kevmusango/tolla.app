@@ -253,10 +253,19 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     const activeMethod = location.verificationMethod || business.verificationMethod || 'code';
     const activeLabel = location.customIdentifierName || business.customIdentifierLabel || 'Identifier';
 
-    if (!refereePhone.trim()) {
-      setClaimError("WhatsApp/Mobile number is required to claim the discount.");
+    let formattedPhone = refereePhone.trim().replace(/\D/g, '');
+    if (formattedPhone.startsWith('27') && formattedPhone.length > 9) {
+      formattedPhone = '0' + formattedPhone.slice(2);
+    }
+    if (formattedPhone.length > 0 && !formattedPhone.startsWith('0')) {
+      formattedPhone = '0' + formattedPhone;
+    }
+
+    if (!formattedPhone.startsWith('0') || formattedPhone.length < 10) {
+      setClaimError("Please enter a valid mobile number starting with '0' (e.g. 07898988980).");
       return;
     }
+
     if (activeMethod === 'code_identifier' && !refereeIdValue.trim()) {
       setClaimError(`${activeLabel} is required to claim the discount.`);
       return;
@@ -265,13 +274,14 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     try {
       await EasyRewardService.createReferral({
         customerBusinessId: customer.id,
-        refereePhone: refereePhone.trim(),
+        refereePhone: formattedPhone,
         refereeEmail: undefined,
         refereeIdentifier: refereeIdValue.trim() || undefined,
         discountCode: referralCode,
         locationId: location.id,
         marketingConsent: marketingConsent
       });
+      setRefereePhone(formattedPhone);
       setClaimSubmitted(true);
     } catch (err) {
       console.error(err);

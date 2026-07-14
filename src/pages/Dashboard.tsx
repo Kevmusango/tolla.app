@@ -1064,21 +1064,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     setLookupLoading(true);
 
     try {
-      const codeClean = redeemCode.trim();
+      let codeClean = redeemCode.trim();
+      if (!/[a-zA-Z]/.test(codeClean)) {
+        let clean = codeClean.replace(/\D/g, '');
+        if (clean.startsWith('27') && clean.length > 9) {
+          clean = '0' + clean.slice(2);
+        }
+        if (clean.length > 0 && !clean.startsWith('0')) {
+          clean = '0' + clean;
+        }
+        codeClean = clean;
+      }
       const codeCleanUpper = codeClean.toUpperCase();
       
-      // 1. Try to find a pending referral (referee/friend discount) by discount code first
+      // 1. Try to find a referral (referee/friend discount) by discount code first
       const { data: refByCode } = await supabase
         .from('referrals')
         .select('*, customer_businesses(*, tolla_users(*))')
         .eq('discount_code', codeCleanUpper)
-        .eq('status', 'pending')
         .is('deleted_at', null)
         .maybeSingle();
 
       let referral = refByCode;
 
-      // 2. If not found by code, try to find a pending referral by phone number
+      // 2. If not found by code, try to find a referral by phone number
       if (!referral) {
         const cleanPhone = codeClean.replace(/\D/g, '');
         const phoneConditions = [];
@@ -1090,7 +1099,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
             .from('referrals')
             .select('*, customer_businesses(*, tolla_users(*))')
             .or(phoneConditions.join(','))
-            .eq('status', 'pending')
             .is('deleted_at', null)
             .maybeSingle();
             
@@ -1101,6 +1109,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
       }
 
       if (referral) {
+        if (referral.status === 'redeemed') {
+          setRedemptionError("This discount code has already been redeemed and cannot be used again.");
+          setLookupLoading(false);
+          return;
+        }
+        if (referral.status === 'pending_approval') {
+          setRedemptionError("This discount code has already been submitted and is currently pending manager approval.");
+          setLookupLoading(false);
+          return;
+        }
+        if (referral.status === 'rejected') {
+          setRedemptionError("This discount code was rejected by the manager.");
+          setLookupLoading(false);
+          return;
+        }
+
         // If a pending referral is found, construct a virtual lookup result for the referee
         const uProfile = {
           id: referral.id,
@@ -1207,8 +1231,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     setRedemptionResult(null);
 
     const spendNum = validationSpend ? parseFloat(validationSpend) : undefined;
+    let codeToRedeem = redeemCode.trim();
+    if (lookupResult?.vouchers && lookupResult.vouchers.length > 0) {
+      codeToRedeem = lookupResult.vouchers[0].discountCode || codeToRedeem;
+    }
+
     const res = await EasyRewardService.redeemCode(
-      redeemCode, 
+      codeToRedeem, 
       authUser.id, 
       activeLocation.id, 
       validationMode === 'whatsapp' ? (validationPhone || undefined) : undefined, 
@@ -2200,12 +2229,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
                   <form onSubmit={handlePreviewLookup} className="space-y-4">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs text-txtsecondary uppercase tracking-wider mb-2 font-bold">Customer Phone Number or Referral ID</label>
+                        <label className="block text-xs text-txtsecondary uppercase tracking-wider mb-2 font-bold">Discount Code or Phone Number (One of the 2)</label>
                         <input 
                           type="text" 
                           value={redeemCode} 
                           onChange={(e) => setRedeemCode(e.target.value)}
-                          placeholder="e.g. +27712345678 or TR-JD9821"
+                          placeholder="e.g. 07898988980 or TR-E3FN34"
                           className="w-full px-5 py-4 rounded-2xl border-2 border-divider focus:border-[#10b981] outline-none text-xl font-mono text-center font-bold text-txtprimary bg-hover transition-all"
                           required
                         />
