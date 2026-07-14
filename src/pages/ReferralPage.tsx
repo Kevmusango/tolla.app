@@ -332,6 +332,43 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
     };
   };
 
+  const checkIsOpen = () => {
+    if (!location || !location.openingHours) return true;
+    
+    const now = new Date();
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDayFull = daysOfWeek[now.getDay()].toLowerCase();
+    const currentDayShort = currentDayFull.substring(0, 3);
+    
+    const matchedKey = Object.keys(location.openingHours).find(
+      key => {
+        const k = key.toLowerCase();
+        return k === currentDayFull || k === currentDayShort;
+      }
+    );
+    
+    if (!matchedKey) return true;
+    const hours = location.openingHours[matchedKey];
+    
+    if (!hours || hours.closed) return false;
+    
+    const currentHrs = now.getHours();
+    const currentMins = now.getMinutes();
+    const currentVal = currentHrs * 60 + currentMins;
+    
+    const parseTimeToMinutes = (timeStr: string) => {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':');
+      if (parts.length < 2) return 0;
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    };
+    
+    const openVal = parseTimeToMinutes(hours.open);
+    const closeVal = parseTimeToMinutes(hours.close);
+    
+    return currentVal >= openVal && currentVal <= closeVal;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center">
@@ -390,10 +427,17 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
             </div>
           </div>
 
-          <div className="hidden sm:block glass-card px-3 py-1.5 rounded-lg text-xs border border-white/15">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
-            Open Now
-          </div>
+          {checkIsOpen() ? (
+            <div className="hidden sm:flex items-center glass-card px-3 py-1.5 rounded-lg text-xs border border-[#10b981]/25 text-[#10b981] bg-[#10b981]/5">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
+              Open Now
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center glass-card px-3 py-1.5 rounded-lg text-xs border border-rose-500/25 text-rose-400 bg-rose-500/5">
+              <span className="inline-block w-2 h-2 rounded-full bg-rose-500 mr-2" />
+              Closed
+            </div>
+          )}
         </div>
       </div>
 
