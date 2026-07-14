@@ -236,15 +236,15 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 
                 /* VIDEO THUMBNAIL STATE */
                 <div 
-                  className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-cover bg-center relative flex flex-col justify-between p-5 cursor-pointer overflow-hidden border border-divider"
-                  style={{ backgroundImage: `url('/hero_video_thumbnail.png')` }}
+                  className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-cover bg-center relative flex flex-col justify-between p-5 cursor-pointer overflow-hidden border border-divider shadow-lg"
+                  style={{ backgroundImage: `url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80')` }}
                   onClick={() => setIsPlayingDemo(true)}
                 >
                   {/* Soft backdrop overlay */}
-                  <div className="absolute inset-0 bg-canvas/60 group-hover:bg-canvas/50 transition-colors" />
+                  <div className="absolute inset-0 bg-slate-950/50 group-hover:bg-slate-950/40 transition-colors" />
 
                   {/* Floating tags */}
-                  <div className="z-10 self-start glass-card px-2.5 py-1 rounded-lg border border-divider text-[10px] font-semibold text-txtprimary">
+                  <div className="z-10 self-start glass-card px-2.5 py-1 rounded-lg border border-white/10 text-[10px] font-semibold text-white bg-slate-950/30">
                     ⚡ Watch How It Works (2 Mins)
                   </div>
 
@@ -257,8 +257,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
                   {/* Bottom title info */}
                   <div className="z-10 text-left">
-                    <h3 className="font-bold text-txtprimary text-sm">The Customer Referral Loop</h3>
-                    <p className="text-[10px] text-txtsecondary mt-0.5">Interactive Step-by-Step Vision Simulator</p>
+                    <h3 className="font-bold text-white text-sm drop-shadow-sm">The Customer Referral Loop</h3>
+                    <p className="text-[10px] text-zinc-200 mt-0.5 font-medium drop-shadow-sm">Interactive Step-by-Step Vision Simulator</p>
                   </div>
                 </div>
 

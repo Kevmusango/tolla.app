@@ -1735,23 +1735,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
           <span className="font-black text-sm text-accent-primary">Tolla</span>
         </div>
         
-        {/* Branch selector on mobile */}
-        {authUser.role === 'owner' && locations.length > 1 ? (
-          <select 
-            value={activeLocation.id}
-            onChange={(e) => {
-              const loc = locations.find(l => l.id === e.target.value);
-              if (loc) setActiveLocation(loc);
-            }}
-            className="px-2 py-1.5 rounded-lg bg-hover border border-divider text-[10px] font-bold text-txtprimary focus:border-[#10b981] outline-none max-w-[140px]"
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleInstallPWA}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#10b981]/15 hover:bg-[#10b981]/25 text-[#10b981] border border-[#10b981]/20 text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer transform active:scale-95"
           >
-            {locations.map(l => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-        ) : (
-          <span className="text-[10px] text-txtsecondary font-bold bg-hover px-2.5 py-1 rounded-lg border border-divider truncate max-w-[120px]">{activeLocation.name}</span>
-        )}
+            📱 Install App
+          </button>
+
+          {/* Branch selector on mobile */}
+          {authUser.role === 'owner' && locations.length > 1 ? (
+            <select 
+              value={activeLocation.id}
+              onChange={(e) => {
+                const loc = locations.find(l => l.id === e.target.value);
+                if (loc) setActiveLocation(loc);
+              }}
+              className="px-2 py-1.5 rounded-lg bg-hover border border-divider text-[10px] font-bold text-txtprimary focus:border-[#10b981] outline-none max-w-[140px]"
+            >
+              {locations.map(l => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-[10px] text-txtsecondary font-bold bg-hover px-2.5 py-1 rounded-lg border border-divider truncate max-w-[120px]">{activeLocation.name}</span>
+          )}
+        </div>
       </header>
 
       {/* Sidebar Navigation (Desktop only) */}
@@ -1867,6 +1876,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
             </button>
           )}
           
+          
+          <button 
+            onClick={handleInstallPWA}
+            className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/25 border border-[#10b981]/25 transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer transform active:scale-95 mb-1"
+          >
+            📱 Install Tolla App
+          </button>
+
           <button 
             onClick={onLogout}
             className="w-full py-2 rounded-xl text-xs font-semibold border border-divider hover:bg-hover text-txtsecondary hover:text-txtprimary transition-all text-center flex items-center justify-center gap-1.5"
