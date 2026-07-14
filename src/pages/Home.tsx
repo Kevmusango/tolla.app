@@ -222,14 +222,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               >
                 Start Free (5 referrals/mo)
               </button>
-              <button 
-                onClick={() => {
-                  window.location.href = '/b/silkandshears/scan';
-                }}
-                className="px-6 py-3 rounded-xl font-bold border border-divider bg-panel hover:bg-hover text-txtsecondary hover:text-txtprimary transition-all text-xs"
-              >
-                Demo Customer Scan ↗
-              </button>
             </div>
           </div>
 
@@ -271,58 +263,20 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 </div>
 
               ) : (
-
-                /* INTERACTIVE SIMULATOR PLAYING STATE */
-                <div className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-panel/95 border border-divider flex flex-col justify-between p-5 relative">
-                  
-                  {/* Progress bar timer */}
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-hover">
-                    <div 
-                      className="h-full bg-accent-primary transition-all duration-4000"
-                      key={demoStep}
-                      style={{ width: '100%', transition: 'width 4s linear' }}
-                    />
-                  </div>
-
-                  {/* Slide Header */}
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-[10px] font-extrabold text-accent-primary uppercase tracking-widest font-mono">
-                      {demoSteps[demoStep].title}
-                    </h4>
-                    <button 
-                      onClick={() => {
-                        setIsPlayingDemo(false);
-                        setDemoStep(0);
-                      }}
-                      className="text-[10px] text-txtsecondary hover:text-txtprimary px-2 py-0.5 rounded border border-divider hover:bg-hover transition-all"
-                    >
-                      Close Demo
-                    </button>
-                  </div>
-
-                  {/* Slide Preview visual container */}
-                  <div className="flex-1 flex items-center justify-center py-1">
-                    {demoSteps[demoStep].preview}
-                  </div>
-
-                  {/* Slide Description & Controls */}
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] text-txtsecondary text-center leading-relaxed px-2">
-                      {demoSteps[demoStep].desc}
-                    </p>
-
-                    {/* Manual Step Controls */}
-                    <div className="flex justify-center items-center gap-2">
-                      {demoSteps.map((_, index) => (
-                        <button 
-                          key={index} 
-                          onClick={() => setDemoStep(index)}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${demoStep === index ? 'bg-accent-primary scale-125' : 'bg-divider hover:bg-activeborder'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
+                /* VIDEO PLAYING STATE */
+                <div className="h-64 sm:h-72 md:h-[320px] w-full rounded-2xl bg-slate-950 border border-divider relative overflow-hidden flex items-center justify-center shadow-2xl">
+                  <video 
+                    src="https://res.cloudinary.com/dnnwvmh3n/video/upload/v1784018517/ec9fe433-4975-44c1-8850-7130e13de241_eytncq.mp4" 
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
+                  <button 
+                    onClick={() => setIsPlayingDemo(false)}
+                    className="absolute top-3 right-3 text-[10px] text-white/80 hover:text-white px-2 py-1 rounded bg-black/60 hover:bg-black/80 transition-all font-sans font-bold z-10 cursor-pointer shadow-lg"
+                  >
+                    Close Video
+                  </button>
                 </div>
               )}
 
@@ -402,6 +356,25 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
         </footer>
       </section>
+
+      {/* Floating WhatsApp CTA */}
+      <a
+        href="https://wa.me/27789992503?text=Hi%20Tolla%20Team!%20I%20have%20a%20question."
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-[#25d366] hover:bg-[#20ba5a] text-white shadow-2xl hover:scale-110 active:scale-95 transition-all group duration-300 cursor-pointer"
+        title="Chat with us on WhatsApp"
+      >
+        <span className="absolute right-16 scale-0 group-hover:scale-100 transition-all origin-right bg-slate-900 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg border border-white/10 whitespace-nowrap shadow-xl">
+          Need help? Chat with us!
+        </span>
+        <svg 
+          className="w-7 h-7 fill-white stroke-none" 
+          viewBox="0 0 24 24"
+        >
+          <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.028L2 22l5.135-1.348a9.97 9.97 0 004.877 1.28h.005c5.507 0 9.99-4.479 9.99-9.986 0-2.67-1.037-5.178-2.92-7.062A9.925 9.925 0 0012.012 2zm5.72 13.972c-.25.707-1.42 1.3-1.95 1.385-.48.077-1.11.13-3.23-.75-2.7-1.12-4.44-3.87-4.575-4.053-.13-.18-1.09-1.453-1.09-2.775 0-1.322.685-1.97.93-2.23.25-.26.54-.325.72-.325.18 0 .36.002.51.01.16.007.375-.062.587.45.22.53.75 1.83.81 1.96.06.13.1.28.01.46-.09.18-.14.28-.28.45-.14.17-.3.38-.43.51-.15.15-.31.32-.13.63.18.31.81 1.346 1.74 2.176.93.83 1.72 1.09 2.03 1.25.31.16.49.13.68-.09.19-.22.81-.94 1.03-1.27.22-.33.44-.28.74-.17.3.11 1.9.9 2.23 1.07.33.17.55.25.63.39.08.14.08.82-.17 1.528z" />
+        </svg>
+      </a>
 
     </div>
   );
