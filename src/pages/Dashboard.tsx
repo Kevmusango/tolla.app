@@ -125,6 +125,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
   const dynamicStats = useMemo(() => {
     if (!activeLocation) return {
       scanners: 0,
+      registeredCustomers: 0,
       scannersWhoShare: 0,
       sharesThatBecomeVisits: 0,
       costOfRewards: 0,
@@ -134,9 +135,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
     // 1. # of customers who scan: total QR Code scans recorded for this branch
     const scanners = analytics.qrScans || 0;
 
-    // 2. # of scanners who share: active customer profiles in this branch who have click events or generated a referral
     const localCustomers = customers.filter(c => c.locationId === activeLocation.id);
     const localReferrals = referrals.filter(r => r.locationId === activeLocation.id);
+
+    const registeredCustomers = localCustomers.length;
 
     // Number of customers who have at least one referral
     const scannersWhoShare = localCustomers.filter(c => 
@@ -170,6 +172,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
 
     return {
       scanners,
+      registeredCustomers,
       scannersWhoShare,
       sharesThatBecomeVisits,
       costOfRewards,
@@ -1859,11 +1862,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, onLogout }) => {
             )}
 
             {/* Metrics cards grid */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
               <div className="glass-panel p-6 rounded-2xl border border-divider space-y-2">
                 <span className="text-[10px] uppercase font-bold text-txtsecondary tracking-wider block">QR Code Scans</span>
                 <p className="text-3xl font-black text-txtprimary font-sans">{dynamicStats.scanners}</p>
                 <span className="text-[10px] text-txtsecondary block">Customers who scanned QR</span>
+              </div>
+              <div className="glass-panel p-6 rounded-2xl border border-divider space-y-2">
+                <span className="text-[10px] uppercase font-bold text-txtsecondary tracking-wider block">Registered Customers</span>
+                <p className="text-3xl font-black text-txtprimary font-sans">{dynamicStats.registeredCustomers}</p>
+                <span className="text-[10px] text-txtsecondary block">Advocates with referral codes</span>
               </div>
               <div className="glass-panel p-6 rounded-2xl border border-divider space-y-2">
                 <span className="text-[10px] uppercase font-bold text-txtsecondary tracking-wider block">Scanners Who Share</span>
