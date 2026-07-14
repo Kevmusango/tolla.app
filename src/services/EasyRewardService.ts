@@ -38,7 +38,7 @@ export const EasyRewardService = {
         businessType: b.business_type || undefined,
         referrerReward: b.referrer_reward,
         friendReward: b.friend_reward,
-        subscriptionPlan: plan as 'free' | 'premium',
+        subscriptionPlan: 'premium',
         createdAt: b.created_at,
         verificationMethod: b.verification_method as any,
         customIdentifierLabel: b.custom_identifier_label || undefined,
@@ -93,7 +93,7 @@ export const EasyRewardService = {
       businessType: created.business_type || undefined,
       referrerReward: created.referrer_reward,
       friendReward: created.friend_reward,
-      subscriptionPlan: 'free',
+      subscriptionPlan: 'premium',
       createdAt: created.created_at,
       verificationMethod: created.verification_method as any,
       customIdentifierLabel: created.custom_identifier_label || undefined,
@@ -168,7 +168,7 @@ export const EasyRewardService = {
       businessType: updatedBiz.business_type || undefined,
       referrerReward: updatedBiz.referrer_reward,
       friendReward: updatedBiz.friend_reward,
-      subscriptionPlan: (sub?.plan_name || 'free') as 'free' | 'premium',
+      subscriptionPlan: 'premium',
       createdAt: updatedBiz.created_at,
       verificationMethod: updatedBiz.verification_method as any,
       customIdentifierLabel: updatedBiz.custom_identifier_label || undefined,
@@ -1572,6 +1572,7 @@ export const EasyRewardService = {
   },
 
   checkLimitEnforced: async (locationId: string, actionType: 'registration' | 'review_approval' | 'create_promotion'): Promise<{ allowed: boolean; currentCount: number; limit: number }> => {
+    return { allowed: true, currentCount: 0, limit: 9999 };
     const { data: location } = await supabase
       .from('locations')
       .select('*, businesses(*)')

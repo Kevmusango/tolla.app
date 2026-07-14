@@ -570,15 +570,15 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ referralCode, busine
                       ✨ Golden Premium Deal
                     </span>
                     {promotion.expiryDate && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-[8px] font-bold">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-hover border border-divider text-txtsecondary text-[8px] font-bold">
                         🕒 Active Offer
                       </span>
                     )}
                   </div>
-                  <h2 className="text-xl font-black text-white tracking-tight leading-snug">{promotion.title}</h2>
-                  <p className="text-xs text-slate-300 leading-relaxed max-w-xl">{promotion.description}</p>
+                  <h2 className="text-xl font-black text-txtprimary tracking-tight leading-snug">{promotion.title}</h2>
+                  <p className="text-xs text-txtsecondary leading-relaxed max-w-xl">{promotion.description}</p>
                   {promotion.expiryDate && (
-                    <p className="text-[9px] text-slate-500 font-semibold">
+                    <p className="text-[9px] text-txtsecondary font-semibold">
                       Offer valid until: {new Date(promotion.expiryDate).toLocaleDateString()}
                     </p>
                   )}
